@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Control de Horas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        /* ===== ESTILOS (MANTENIDOS IGUAL) ===== */
+        :root {
+            --palma-yellow: #ffff00;
+            --palma-yellow-bright: #ffff33;
+            --bg-primary: #1d1e22;
+            --bg-card: #2a2b30;
+            --bg-input: #141518;
+            --border-color: #4a4b52;
+            --text-main: #ffffff;
+            --text-dark: #1a1a1a;
+            --text-muted: #d0aaee;
+            --michael-color: #9d00ff;
+            --nico-color: #ff007f;
+            --danger: #ff4d4d;
+            --shadow-3d: 0 12px 20px -6px rgba(0, 0, 0, 0.6), 0 4px 0px #121315;
+            --shadow-3d-yellow: 0 12px 28px rgba(255, 255, 0, 0.2), 0 4px 0px #a3a300;
+            --shadow-3d-btn: 0 6px 0px #b3a700, 0 12px 20px rgba(0, 0, 0, 0.4);
+            --shadow-3d-btn-active: 0 2px 0px #b3a700, 0 6px 10px rgba(0, 0, 0, 0.3);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            padding: 24px 16px;
+            line-height: 1.5;
+            background: radial-gradient(circle at top center, #32333a 0%, var(--bg-primary) 70%);
+            min-height: 100vh;
+            perspective: 1000px;
+            transition: background 0.3s ease;
+            will-change: background;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        /* Toast */
+        #toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--bg-card);
+            border: 2px solid var(--palma-yellow);
+            border-radius: 12px;
+            padding: 14px 24px 14px 20px;
+            box-shadow: var(--shadow-3d-yellow), 0 8px 20px rgba(0,0,0,0.6);
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease;
+            pointer-events: auto;
+            backdrop-filter: blur(4px);
+            min-width: 240px;
+            max-width: 400px;
+        }
+        .toast.show { transform: translateX(0); opacity: 1; }
+        .toast .toast-icon { font-size: 1.4rem; }
+        .toast .toast-close {
+            background: none; border: none; color: var(--text-muted);
+            cursor: pointer; font-size: 1.2rem; margin-left: auto; padding: 0 4px;
+            transition: color 0.2s;
+        }
+        .toast .toast-close:hover { color: var(--palma-yellow); }
+
+        /* Header y resto de estilos (se mantienen igual que antes) */
+        header {
+            position: relative;
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 32px 20px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 2px solid var(--border-color);
+            box-shadow: var(--shadow-3d);
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            will-change: transform, box-shadow;
+        }
+        header:hover { transform: translateY(-4px) rotateX(2deg) rotateY(-1deg) scale(1.005); box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.7), 0 6px 0px #121315; }
+
+        .controls-wrapper {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 6px 12px;
+            border-radius: 40px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            z-index: 10;
+        }
+        .color-picker-group { display: flex; align-items: center; gap: 3px; }
+        .color-picker-group label { font-size: 0.55rem; color: var(--palma-yellow); font-weight: 800; text-transform: uppercase; letter-spacing: 0.2px; margin: 0; cursor: pointer; }
+        .controls-wrapper input[type="color"] { -webkit-appearance: none; border: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; background: transparent; padding: 0; }
+        .controls-wrapper input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        .controls-wrapper input[type="color"]::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .toggle-anim-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--palma-yellow);
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            white-space: nowrap;
+        }
+        .toggle-anim-btn:hover { transform: scale(1.04); border-color: var(--palma-yellow); }
+        .reset-bg-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 0.9rem; transition: color 0.2s, transform 0.3s ease; padding: 0 3px; }
+        .reset-bg-btn:hover { color: var(--palma-yellow); transform: rotate(-180deg) scale(1.08); }
+
+        header h1 {
+            color: var(--palma-yellow);
+            font-size: 3.6rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            display: inline-block;
+            transform-style: preserve-3d;
+            perspective: 300px;
+            text-shadow: 0 1px 0 #b2b200, 0 2px 0 #999900, 0 3px 0 #808000, 0 4px 0 #666600, 0 5px 0 #4d4d00, 0 10px 20px rgba(0, 0, 0, 0.7);
+            animation: flying3D 8s ease-in-out infinite alternate;
+            transition: text-shadow 0.3s ease, color 0.3s ease;
+            will-change: transform, text-shadow;
+        }
+        header h1:hover {
+            animation-play-state: paused;
+            transform: scale(1.03) rotateY(-3deg);
+            text-shadow: 0 1px 0 #b2b200, 0 3px 0 #999900, 0 5px 0 #808000, 0 7px 0 #666600, 0 9px 0 #4d4d00, 0 15px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 0, 0.4);
+        }
+        @keyframes flying3D {
+            0% { transform: translateZ(0px) translateY(0px) rotateX(0deg) rotateY(0deg) scale(1); text-shadow: 0 1px 0 #b2b200, 0 2px 0 #999900, 0 3px 0 #808000, 0 4px 0 #666600, 0 5px 0 #4d4d00, 0 10px 20px rgba(0, 0, 0, 0.7); }
+            35% { transform: translateZ(35px) translateY(-10px) rotateX(5deg) rotateY(-8deg) scale(1.015); text-shadow: -2px 2px 0 #b2b200, -4px 4px 0 #999900, -6px 6px 0 #808000, -8px 8px 0 #666600, -10px 10px 0 #4d4d00, -15px 20px 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 255, 0, 0.4); }
+            65% { transform: translateZ(20px) translateY(-5px) rotateX(-6deg) rotateY(10deg) scale(0.99); text-shadow: 3px 2px 0 #b2b200, 6px 4px 0 #999900, 9px 6px 0 #808000, 12px 8px 0 #666600, 15px 10px 0 #4d4d00, 18px 18px 25px rgba(0, 0, 0, 0.8); }
+            100% { transform: translateZ(50px) translateY(-15px) rotateX(8deg) rotateY(4deg) scale(1.04); text-shadow: 0 2px 0 #b2b200, 0 4px 0 #999900, 0 6px 0 #808000, 0 8px 0 #666600, 0 10px 0 #4d4d00, 0 20px 40px rgba(0, 0, 0, 0.95), 0 0 30px rgba(255, 255, 0, 0.5); }
+        }
+        body.no-anim header h1 { animation: none !important; transform: none !important; text-shadow: 0 4px 8px rgba(0,0,0,0.7) !important; }
+        body.no-anim header:hover, body.no-anim .card:hover, body.no-anim .params-card:hover, body.no-anim .stat-card:hover, body.no-anim .chart-box:hover { transform: none !important; box-shadow: var(--shadow-3d) !important; }
+
+        header p { color: var(--text-muted); font-size: 0.95rem; font-weight: 600; }
+        .schedules-badge { display: flex; justify-content: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+        .badge {
+            background-color: var(--bg-input);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            transition: transform 0.25s ease, background-color 0.3s ease;
+            will-change: transform;
+        }
+        .badge:hover { transform: translateZ(10px) scale(1.02); }
+
+        .params-card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 18px 22px;
+            margin-bottom: 24px;
+            border: 2px solid var(--border-color);
+            box-shadow: var(--shadow-3d);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+            transform-style: preserve-3d;
+            will-change: transform, box-shadow;
+        }
+        .params-card:hover { transform: translateY(-3px) rotateX(1deg) scale(1.003); border-color: var(--palma-yellow); box-shadow: 0 16px 28px -6px rgba(0, 0, 0, 0.6), 0 6px 0px #121315; }
+        .params-card h2 { font-size: 1rem; color: var(--palma-yellow); display: flex; align-items: center; gap: 6px; margin: 0; text-transform: uppercase; letter-spacing: 0.3px; font-weight: 800; }
+        .params-wrapper { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .param-group { display: flex; align-items: center; gap: 8px; }
+        .params-card label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+        .params-card input {
+            width: 150px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background-color: var(--bg-input);
+            border: 1.5px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .params-card input:focus { border-color: var(--palma-yellow); box-shadow: 0 0 10px rgba(255, 255, 0, 0.15), inset 0 2px 4px rgba(0,0,0,0.4); }
+        .valor-hora-display {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--palma-yellow);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--palma-yellow);
+            box-shadow: inset 0 0 8px rgba(255, 255, 0, 0.1);
+        }
+
+        .grid-layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
+        @media (max-width: 960px) {
+            .grid-layout { grid-template-columns: 1fr; }
+            .params-card, .params-wrapper { flex-direction: column; align-items: stretch; }
+            .params-card input { width: 100%; }
+            .controls-wrapper { position: static; margin: 0 auto 12px auto; width: fit-content; justify-content: center; border-radius: 30px; }
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 22px;
+            border: 2px solid var(--border-color);
+            box-shadow: var(--shadow-3d);
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+            transform-style: preserve-3d;
+            will-change: transform, box-shadow;
+        }
+        .card:hover { transform: translateY(-5px) rotateX(1.5deg) rotateY(2deg) scale(1.006); border-color: var(--palma-yellow); box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.7), 0 6px 0px #121315; }
+        .card h2 { font-size: 1.1rem; margin-bottom: 18px; color: var(--palma-yellow); display: flex; align-items: center; gap: 6px; text-transform: uppercase; font-weight: 800; }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+        select, input[type="date"], input[type="time"] {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background-color: var(--bg-input);
+            border: 1.5px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+        select:focus, input:focus { border-color: var(--palma-yellow); box-shadow: 0 0 10px rgba(255, 255, 0, 0.12), inset 0 2px 4px rgba(0,0,0,0.4); }
+        .preset-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+        .preset-btn {
+            padding: 6px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 0px var(--border-color);
+        }
+        .preset-btn:hover { background-color: var(--border-color); color: white; transform: translateY(-2px); box-shadow: 0 4px 0px #121315; }
+        .preset-btn:active { transform: translateY(1px); box-shadow: 0 1px 0px #121315; }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            background: rgba(0,0,0,0.15);
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .checkbox-group input { width: 16px; height: 16px; accent-color: var(--palma-yellow); cursor: pointer; }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--palma-yellow-bright) 0%, var(--palma-yellow) 100%);
+            color: var(--text-dark);
+            font-weight: 900;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.12s ease;
+            box-shadow: var(--shadow-3d-btn);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            position: relative;
+            top: 0;
+            will-change: transform, box-shadow;
+        }
+        .btn:hover { background: linear-gradient(135deg, #ffff66 0%, var(--palma-yellow-bright) 100%); transform: translateY(-3px) scale(1.008); box-shadow: 0 8px 0px #b3a700, 0 12px 20px rgba(255, 255, 0, 0.3); }
+        .btn:active { top: 4px; box-shadow: var(--shadow-3d-btn-active); transform: scale(0.98); }
+
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 22px; }
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px 10px;
+            text-align: center;
+            box-shadow: var(--shadow-3d);
+            transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+            transform-style: preserve-3d;
+            will-change: transform, box-shadow;
+        }
+        .stat-card:hover { transform: translateY(-5px) rotateX(2deg) scale(1.015); border-color: var(--palma-yellow); box-shadow: 0 16px 28px -6px rgba(0, 0, 0, 0.6), 0 4px 0px #121315; }
+        .stat-card .title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.3px; }
+        .stat-card .value { font-size: 1.4rem; font-weight: 900; margin-top: 4px; }
+        .stat-card .monto { font-size: 0.85rem; color: var(--palma-yellow); margin-top: 2px; font-weight: 700; }
+        .val-30 { color: var(--palma-yellow); }
+        .val-50 { color: #50ffb1; }
+        .val-130 { color: #ff7be8; }
+        .val-night-total { color: #ffffff; }
+        .stat-card-highlight { border-color: var(--palma-yellow) !important; background: linear-gradient(135deg, #3d004d 0%, #200029 100%) !important; box-shadow: var(--shadow-3d-yellow) !important; }
+        .stat-card-highlight .title { color: var(--palma-yellow) !important; }
+        .monto-total { font-size: 1.8rem; color: var(--palma-yellow); font-weight: 900; text-shadow: 0 0 12px rgba(255, 255, 0, 0.25); margin-top: 2px; }
+        .monto-detalle { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+        .filter-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+        .filter-bar h2 { font-size: 1rem; margin: 0; white-space: nowrap; }
+        .filter-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .filter-btn {
+            padding: 5px 14px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border-color);
+            background-color: var(--bg-input);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 0px rgba(0,0,0,0.3);
+        }
+        .filter-btn:hover { border-color: var(--palma-yellow); color: var(--palma-yellow); transform: translateY(-2px); box-shadow: 0 4px 0px rgba(0,0,0,0.3); }
+        .filter-btn.active { color: var(--text-dark); font-weight: 900; }
+        .filter-btn.michael.active { background-color: var(--michael-color); border-color: var(--michael-color); color: #fff; }
+        .filter-btn.nico.active { background-color: var(--nico-color); border-color: var(--nico-color); color: #fff; }
+        .filter-btn.todos.active { background-color: var(--palma-yellow); border-color: var(--palma-yellow); color: var(--text-dark); }
+        .btn-export {
+            background-color: #50ffb1;
+            color: #000;
+            padding: 5px 14px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 0.78rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 0px #22b874;
+        }
+        .btn-export:hover { transform: translateY(-2px); box-shadow: 0 4px 0px #22b874; }
+        .clear-btn {
+            background-color: rgba(255, 77, 77, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(255, 77, 77, 0.3);
+            padding: 5px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        .clear-btn:hover { background-color: var(--danger); color: white; transform: scale(1.02); }
+
+        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: center; }
+        th {
+            background-color: rgba(0, 0, 0, 0.25);
+            color: var(--palma-yellow);
+            font-weight: 800;
+            padding: 12px 8px;
+            white-space: nowrap;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        td { padding: 10px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); vertical-align: middle; }
+        tbody tr { transition: background-color 0.15s ease, transform 0.15s ease; will-change: background-color, transform; }
+        tr.michael-row { background-color: rgba(157, 0, 255, 0.06); }
+        tr.nico-row { background-color: rgba(255, 0, 127, 0.06); }
+        tr.michael-row td:first-child { border-left: 3px solid var(--michael-color); }
+        tr.nico-row td:first-child { border-left: 3px solid var(--nico-color); }
+        tbody tr:hover { background-color: rgba(255, 255, 0, 0.05); transform: scale(1.004); }
+        .badge-rate { padding: 3px 8px; border-radius: 20px; font-weight: 800; font-size: 0.74rem; display: inline-block; }
+        .badge-30 { background: rgba(255, 255, 0, 0.15); color: var(--palma-yellow); border: 1px solid var(--palma-yellow); }
+        .badge-50 { background: rgba(80, 255, 177, 0.15); color: #50ffb1; border: 1px solid #50ffb1; }
+        .badge-130 { background: rgba(255, 123, 232, 0.15); color: #ff7be8; border: 1px solid #ff7be8; }
+        .night-badge { background: rgba(255, 230, 0, 0.1); color: var(--palma-yellow); padding: 2px 6px; border-radius: 10px; font-size: 0.65rem; display: inline-block; margin-left: 3px; }
+        .btn-action { background: none; border: none; cursor: pointer; font-size: 0.95rem; padding: 3px 5px; border-radius: 4px; transition: transform 0.15s ease; }
+        .btn-action:hover { transform: scale(1.3) rotate(-3deg); }
+
+        .chart-wrapper { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .chart-wrapper { grid-template-columns: 1fr; } }
+        .chart-box {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 18px;
+            border: 2px solid var(--border-color);
+            box-shadow: var(--shadow-3d);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+            will-change: transform, box-shadow;
+        }
+        .chart-box:hover { transform: translateY(-4px) rotateX(1.5deg) scale(1.006); border-color: var(--palma-yellow); box-shadow: 0 16px 28px -6px rgba(0, 0, 0, 0.6), 0 4px 0px #121315; }
+        .chart-box h3 { color: var(--palma-yellow); font-size: 0.9rem; margin-bottom: 10px; width: 100%; text-align: center; text-transform: uppercase; letter-spacing: 0.3px; font-weight: 800; }
+        .chart-box canvas { max-width: 200px; max-height: 200px; }
+        .chart-legend-custom { display: flex; justify-content: center; gap: 14px; margin-top: 12px; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-muted); }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-color { width: 10px; height: 10px; border-radius: 50%; }
+
+        .info-box-bottom {
+            background-color: var(--bg-card);
+            border-left: 4px solid var(--palma-yellow);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-top: 22px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-3d);
+            line-height: 1.5;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .info-box-bottom strong { color: var(--palma-yellow); }
+        .info-box-bottom .highlight { color: #ff7be8; font-weight: 700; }
+        .footer-notes {
+            margin-top: 18px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .footer-notes span { background: var(--bg-card); padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border-color); transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .loading-row td { padding: 30px; color: var(--text-muted); font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- TOAST -->
+        <div id="toast-container"></div>
+
+        <!-- HEADER -->
+        <header>
+            <div class="controls-wrapper">
+                <div class="color-picker-group">
+                    <label for="bgColorPicker">⬛</label>
+                    <input type="color" id="bgColorPicker" value="#1d1e22" title="Color de fondo">
+                </div>
+                <div class="color-picker-group">
+                    <label for="cardColorPicker">🟦</label>
+                    <input type="color" id="cardColorPicker" value="#2a2b30" title="Color de tarjetas">
+                </div>
+                <div class="color-picker-group">
+                    <label for="borderColorPicker">🟫</label>
+                    <input type="color" id="borderColorPicker" value="#4a4b52" title="Color de bordes">
+                </div>
+                <div class="color-picker-group">
+                    <label for="accentColorPicker">🌟</label>
+                    <input type="color" id="accentColorPicker" value="#ffff00" title="Color de acento">
+                </div>
+                <button type="button" class="toggle-anim-btn" id="animToggleBtn" onclick="toggleAnimation()" title="Activar/Desactivar Animaciones">
+                    🎬 Anim: ON
+                </button>
+                <button type="button" class="reset-bg-btn" onclick="resetTheme()" title="Restablecer predeterminados">↺</button>
+            </div>
+            <h1>Control de Horas</h1>
+            <p>Sistema Automatizado control horas extras</p>
+            <div class="schedules-badge">
+                <div class="badge">🧑 Michael Pintos: <span style="color:var(--palma-yellow);">Lun-Vie 05:00–13:00</span></div>
+                <div class="badge">📅 Sáb: <span style="color:var(--palma-yellow);">06:00–11:00</span></div>
+                <div class="badge">🧑 Nicolás Morel: <span style="color:var(--nico-color);">Lun-Vie 13:00–21:00</span></div>
+                <div class="badge">📅 Sáb: <span style="color:var(--nico-color);">11:00–16:00</span></div>
+            </div>
+        </header>
+
+        <!-- PARÁMETROS -->
+        <div class="params-card">
+            <h2>💰 Parámetros Salariales</h2>
+            <div class="params-wrapper">
+                <div class="param-group">
+                    <label for="salario">Salario mensual bruto (PYG)</label>
+                    <input type="number" id="salario" placeholder="Ej: 3044000" step="1000">
+                </div>
+                <div class="param-group">
+                    <label for="valorHora">Valor hora base (PYG)</label>
+                    <input type="number" id="valorHora" step="100" style="width:140px;" placeholder="0">
+                </div>
+                <div class="valor-hora-display" id="valorHoraDisplay">0 PYG/h</div>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <!-- FORMULARIO -->
+            <div class="card">
+                <h2>📝 Registrar Jornada</h2>
+                <form id="shiftForm">
+                    <div class="form-group">
+                        <label for="worker">Empleado</label>
+                        <select id="worker" required>
+                            <option value="Michael Pintos">Michael Pintos</option>
+                            <option value="Nicolás Morel">Nicolás Morel</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Atajos de turnos habituales</label>
+                        <div class="preset-btn-group">
+                            <button type="button" class="preset-btn" onclick="setPreset('05:00','13:00')">05:00 → 13:00</button>
+                            <button type="button" class="preset-btn" onclick="setPreset('13:00','21:00')">13:00 → 21:00</button>
+                            <button type="button" class="preset-btn" onclick="setPreset('05:00','17:00')">05:00 → 17:00</button>
+                            <button type="button" class="preset-btn" onclick="setPreset('17:00','05:00')">17:00 → 05:00</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Fecha de inicio</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="startTime">Hora entrada</label>
+                        <input type="time" id="startTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endTime">Hora salida</label>
+                        <input type="time" id="endTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="break30" checked>
+                            Descontar 30 min descanso (si > 8h)
+                        </label>
+                    </div>
+                    <button type="submit" class="btn" id="submitBtn">⚡ Calcular y Registrar</button>
+                </form>
+                <div style="margin-top:10px; font-size:0.75rem; color:var(--text-muted); text-align:center;">
+                    <span id="editModeIndicator"></span>
+                </div>
+            </div>
+
+            <!-- RESULTADOS -->
+            <div>
+                <div class="summary-cards" id="summaryCards">
+                    <div class="stat-card">
+                        <div class="title">Nocturnidad 30%</div>
+                        <div class="value val-30" id="total30">0.0h</div>
+                        <div class="monto" id="monto30">0 PYG</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="title">Extra 50%</div>
+                        <div class="value val-50" id="total50">0.0h</div>
+                        <div class="monto" id="monto50">0 PYG</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="title">Extra Noc 130%</div>
+                        <div class="value val-130" id="total130">0.0h</div>
+                        <div class="monto" id="monto130">0 PYG</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="title">🌙 Total Nocturnas</div>
+                        <div class="value val-night-total" id="totalNight">0.0h</div>
+                        <div class="monto" id="montoNight">0 PYG</div>
+                    </div>
+                    <div class="stat-card stat-card-highlight" style="grid-column: span 2;">
+                        <div class="title">💰 Total Estimado a Pagar</div>
+                        <div class="monto-total" id="totalPagar">0 PYG</div>
+                        <div class="monto-detalle" id="totalPagarDetalle"></div>
+                    </div>
+                </div>
+
+                <!-- TABLA -->
+                <div class="card">
+                    <div class="filter-bar">
+                        <h2>📋 Registros</h2>
+                        <div class="filter-controls">
+                            <button class="filter-btn michael" data-filter="Michael Pintos" onclick="setFilter(this)">Michael</button>
+                            <button class="filter-btn nico" data-filter="Nicolás Morel" onclick="setFilter(this)">Nicolás</button>
+                            <button class="filter-btn todos active" data-filter="TODOS" onclick="setFilter(this)">Todos</button>
+                            <button class="btn-export" onclick="exportCSV()">📤 CSV</button>
+                            <button class="clear-btn" onclick="clearAllRecords()">🗑️ Limpiar</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Empleado</th>
+                                    <th>Horario</th>
+                                    <th>Efectivas</th>
+                                    <th>Noc 30%</th>
+                                    <th>Extra 50%</th>
+                                    <th>Extra Noc 130%</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTable">
+                                <!-- Contenido dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CHARTS -->
+                <div class="chart-wrapper">
+                    <div class="chart-box">
+                        <h3>📊 Distribución de Horas</h3>
+                        <canvas id="pieChart"></canvas>
+                        <div class="chart-legend-custom">
+                            <span class="legend-item"><span class="legend-color" style="background:var(--palma-yellow)"></span> Noc 30%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:#50ffb1"></span> Extra 50%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:#ff7be8"></span> Extra Noc 130%</span>
+                        </div>
+                    </div>
+                    <div class="chart-box">
+                        <h3>📊 Comparativa de Categorías</h3>
+                        <canvas id="barChart"></canvas>
+                        <div class="chart-legend-custom">
+                            <span class="legend-item"><span class="legend-color" style="background:var(--palma-yellow)"></span> Noc 30%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:#50ffb1"></span> Extra 50%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:#ff7be8"></span> Extra Noc 130%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REGLAS -->
+        <div class="info-box-bottom">
+            💡 <strong>Reglas de cálculo aplicadas:</strong><br>
+            • Horas base: <strong>8h</strong> (Lunes a Viernes) / <strong>5h</strong> (Sábados).<br>
+            • <span class="highlight">Nocturnidad 30%</span> → Tramo de <strong>20:00 a 01:00</strong> dentro de las horas base (Paga 130% del valor hora).<br>
+            • <span class="highlight">Extra Nocturna 130%</span> → Tramo de <strong>01:00 a 06:00</strong> fuera de horas base (Paga 230% del valor hora).<br>
+            • <span class="highlight">Extra 50%</span> → Excedente de base en horario diurno (06:00–20:00) (Paga 150% del valor hora).<br>
+            • Descuento de descanso: 30 min automáticos si la jornada bruta supera las 8 horas.
+        </div>
+
+        <div class="footer-notes">
+            <span>🟣 Michael: Lun-Vie 05-13h / Sáb 06-11h</span>
+            <span>💖 Nicolás: Lun-Vie 13-21h / Sáb 11-16h</span>
+            <span>🌙 30%: 20:00–01:00 (base)</span>
+            <span>🌙 130%: 01:00–06:00 (excedente)</span>
+            <span>📅 Sábado: base max 5h</span>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        // CONFIGURACIÓN FIREBASE
+        // ================================================================
+        const FIREBASE_URL = 'https://control-hora-extra-default-rtdb.europe-west1.firebasedatabase.app/';
+
+        // ================================================================
+        // ESTADO
+        // ================================================================
+        let records = [];
+        let editingId = null;
+        let pieChartInstance = null;
+        let barChartInstance = null;
+        let currentFilter = 'TODOS';
+        let salarioMensual = parseFloat(localStorage.getItem('salarioMensual')) || 0;
+        let valorHoraBase = parseFloat(localStorage.getItem('valorHoraBase')) || 0;
+
+        // ================================================================
+        // TOAST
+        // ================================================================
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            const icon = type === 'success' ? '✅' : '❌';
+            toast.innerHTML = `
+                <span class="toast-icon">${icon}</span>
+                <span>${message}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            const timeout = setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                clearTimeout(timeout);
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            });
+        }
+
+        // ================================================================
+        // OPERACIONES CRUD CON FIREBASE (REST)
+        // ================================================================
+        async function fetchRecordsFromFirebase() {
+            try {
+                const response = await fetch(`${FIREBASE_URL}.json`);
+                if (!response.ok) throw new Error('Error al obtener datos');
+                const data = await response.json();
+                if (data) {
+                    return Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                } else {
+                    return [];
+                }
+            } catch (error) {
+                console.error('Error fetchRecords:', error);
+                showNotification('❌ Error al cargar datos desde Firebase', 'error');
+                return null;
+            }
+        }
+
+        async function saveRecordToFirebase(record) {
+            try {
+                const { id, ...recordWithoutId } = record;
+                const response = await fetch(`${FIREBASE_URL}.json`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(recordWithoutId)
+                });
+                if (!response.ok) throw new Error('Error al guardar');
+                const result = await response.json();
+                return result.name;
+            } catch (error) {
+                console.error('Error saveRecord:', error);
+                showNotification('❌ Error al guardar en Firebase', 'error');
+                return null;
+            }
+        }
+
+        async function updateRecordInFirebase(id, record) {
+            try {
+                const { id: _, ...recordWithoutId } = record;
+                const response = await fetch(`${FIREBASE_URL}${id}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(recordWithoutId)
+                });
+                if (!response.ok) throw new Error('Error al actualizar');
+                return true;
+            } catch (error) {
+                console.error('Error updateRecord:', error);
+                showNotification('❌ Error al actualizar en Firebase', 'error');
+                return false;
+            }
+        }
+
+        async function deleteRecordFromFirebase(id) {
+            try {
+                const response = await fetch(`${FIREBASE_URL}${id}.json`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) throw new Error('Error al eliminar');
+                return true;
+            } catch (error) {
+                console.error('Error deleteRecord:', error);
+                showNotification('❌ Error al eliminar de Firebase', 'error');
+                return false;
+            }
+        }
+
+        async function clearAllFromFirebase() {
+            try {
+                const response = await fetch(`${FIREBASE_URL}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                if (!response.ok) throw new Error('Error al limpiar');
+                return true;
+            } catch (error) {
+                console.error('Error clearAll:', error);
+                showNotification('❌ Error al limpiar la base de datos', 'error');
+                return false;
+            }
+        }
+
+        // ================================================================
+        // SAVE RECORD (CORREGIDO)
+        // ================================================================
+        async function saveRecord(recordData, isEdit = false) {
+            let success = false;
+
+            if (isEdit && editingId) {
+                const ok = await updateRecordInFirebase(editingId, recordData);
+                if (ok) {
+                    const index = records.findIndex(r => r.id === editingId);
+                    if (index !== -1) {
+                        records[index] = { ...recordData, id: editingId };
+                    }
+                    success = true;
+                }
+            } else {
+                const firebaseId = await saveRecordToFirebase(recordData);
+                if (firebaseId) {
+                    const newRecord = { ...recordData, id: firebaseId };
+                    records.push(newRecord);
+                    success = true;
+                }
+            }
+
+            if (success) {
+                cancelEdit();
+                renderTable();
+                updateTotals();
+                updateCharts();
+                showNotification(isEdit ? '✅ Registro actualizado con éxito' : '✅ Registro cargado con éxito', 'success');
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        // ================================================================
+        // FUNCIONES DE UI
+        // ================================================================
+        async function loadData() {
+            const tbody = document.getElementById('recordsTable');
+            tbody.innerHTML = `<tr class="loading-row"><td colspan="8">⏳ Cargando datos desde Firebase...</td></tr>`;
+            const data = await fetchRecordsFromFirebase();
+            if (data !== null) {
+                records = data;
+                renderTable();
+                updateTotals();
+                updateCharts();
+                showNotification('✅ Datos cargados desde Firebase', 'success');
+            } else {
+                records = [];
+                renderTable();
+                updateTotals();
+                updateCharts();
+                showNotification('⚠️ No se pudieron cargar los datos', 'error');
+            }
+        }
+
+        async function deleteRecord(id) {
+            if (!confirm('¿Eliminar este registro?')) return;
+            const ok = await deleteRecordFromFirebase(id);
+            if (ok) {
+                records = records.filter(r => r.id !== id);
+                if (editingId === id) cancelEdit();
+                renderTable();
+                updateTotals();
+                updateCharts();
+                showNotification('🗑️ Registro eliminado', 'success');
+            }
+        }
+
+        async function clearAllRecords() {
+            if (!confirm('¿Seguro que deseas eliminar TODOS los registros?')) return;
+            const ok = await clearAllFromFirebase();
+            if (ok) {
+                records = [];
+                if (editingId !== null) cancelEdit();
+                renderTable();
+                updateTotals();
+                updateCharts();
+                showNotification('🗑️ Todos los registros eliminados', 'success');
+            }
+        }
+
+        function setPreset(start, end) {
+            document.getElementById('startTime').value = start;
+            document.getElementById('endTime').value = end;
+        }
+
+        document.getElementById('date').valueAsDate = new Date();
+        document.getElementById('worker').addEventListener('change', function(e) {
+            if (e.target.value === 'Michael Pintos') setPreset('05:00', '13:00');
+            else setPreset('13:00', '21:00');
+        });
+        setPreset('05:00', '13:00');
+
+        if (salarioMensual > 0) document.getElementById('salario').value = salarioMensual;
+        if (valorHoraBase > 0) {
+            document.getElementById('valorHora').value = valorHoraBase;
+            document.getElementById('valorHoraDisplay').textContent = valorHoraBase.toLocaleString('es-PY') + ' PYG/h';
+        }
+
+        document.getElementById('salario').addEventListener('input', function() {
+            const salario = parseFloat(this.value) || 0;
+            salarioMensual = salario;
+            localStorage.setItem('salarioMensual', salarioMensual);
+            if (salario > 0) {
+                const nuevoValorHora = Math.round(salario / (30 * 8));
+                document.getElementById('valorHora').value = nuevoValorHora;
+                document.getElementById('valorHoraDisplay').textContent = nuevoValorHora.toLocaleString('es-PY') + ' PYG/h';
+                valorHoraBase = nuevoValorHora;
+                localStorage.setItem('valorHoraBase', valorHoraBase);
+            } else {
+                document.getElementById('valorHora').value = '';
+                document.getElementById('valorHoraDisplay').textContent = '0 PYG/h';
+                valorHoraBase = 0;
+                localStorage.setItem('valorHoraBase', 0);
+            }
+            updateTotals();
+        });
+
+        document.getElementById('valorHora').addEventListener('input', function() {
+            valorHoraBase = parseFloat(this.value) || 0;
+            localStorage.setItem('valorHoraBase', valorHoraBase);
+            document.getElementById('valorHoraDisplay').textContent = (valorHoraBase > 0 ? valorHoraBase.toLocaleString('es-PY') : '0') + ' PYG/h';
+            updateTotals();
+        });
+
+        function setFilter(btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            renderTable();
+            updateTotals();
+            updateCharts();
+        }
+
+        function calculateHours(worker, dateStr, startStr, endStr, hasBreak) {
+            const [sH, sM] = startStr.split(':').map(Number);
+            const [eH, eM] = endStr.split(':').map(Number);
+            let startMin = sH * 60 + sM;
+            let endMin = eH * 60 + eM;
+            if (endMin <= startMin) endMin += 1440;
+            let totalBruto = endMin - startMin;
+            const fecha = new Date(dateStr + 'T00:00:00');
+            const isSaturday = fecha.getDay() === 6;
+            const baseLimitMinutes = isSaturday ? 300 : 480;
+            let breakMinutes = (hasBreak && totalBruto > 480) ? 30 : 0;
+            const effectiveMin = totalBruto - breakMinutes;
+            let baseMinutes = 0, minutes30 = 0, minutes50 = 0, minutes130 = 0, workedBaseMin = 0;
+            for (let m = startMin; m < startMin + effectiveMin; m++) {
+                const hourOfDay = (Math.floor(m / 60)) % 24;
+                const isNight = (hourOfDay >= 20 || hourOfDay < 6);
+                if (workedBaseMin < baseLimitMinutes) {
+                    if (isNight) minutes30++;
+                    else baseMinutes++;
+                    workedBaseMin++;
+                } else {
+                    if (isNight) minutes130++;
+                    else minutes50++;
+                }
+            }
+            return {
+                totalWorked: (effectiveMin / 60).toFixed(1),
+                base: (baseMinutes / 60).toFixed(1),
+                h30: (minutes30 / 60).toFixed(1),
+                h50: (minutes50 / 60).toFixed(1),
+                h130: (minutes130 / 60).toFixed(1),
+                isSaturday,
+                baseLimit: baseLimitMinutes / 60,
+                breakApplied: breakMinutes > 0,
+                hasNight: (minutes30 + minutes130) > 0
+            };
+        }
+
+        function editRecord(id) {
+            const record = records.find(r => r.id === id);
+            if (!record) return;
+            editingId = id;
+            document.getElementById('worker').value = record.worker;
+            document.getElementById('date').value = record.date;
+            document.getElementById('startTime').value = record.startTime;
+            document.getElementById('endTime').value = record.endTime;
+            document.getElementById('break30').checked = record.hasBreak;
+            document.getElementById('editModeIndicator').innerHTML =
+                `✏️ Editando registro del <strong>${record.date}</strong> <button type="button" class="clear-btn" onclick="cancelEdit()" style="margin-left:8px; padding:2px 8px;">Cancelar</button>`;
+            document.getElementById('submitBtn').textContent = '💾 Actualizar Registro';
+        }
+
+        function cancelEdit() {
+            editingId = null;
+            document.getElementById('editModeIndicator').innerHTML = '';
+            document.getElementById('submitBtn').textContent = '⚡ Calcular y Registrar';
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('recordsTable');
+            tbody.innerHTML = '';
+            const filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="padding:24px;color:var(--text-muted);text-align:center;">
+                            <span style="font-size:1.2rem;display:block;margin-bottom:6px;">📭</span>
+                            No hay registros para mostrar
+                        </td></tr>`;
+                return;
+            }
+            filtered.forEach(r => {
+                const h30 = parseFloat(r.h30) || 0;
+                const h130 = parseFloat(r.h130) || 0;
+                const isNight = (h30 + h130) > 0;
+                const tr = document.createElement('tr');
+                tr.classList.add(r.worker === 'Michael Pintos' ? 'michael-row' : 'nico-row');
+                let horarioDisplay = `${r.startTime} - ${r.endTime}`;
+                if (r.breakApplied) horarioDisplay += ' <small style="color:var(--text-muted);">(30m)</small>';
+                if (isNight) horarioDisplay += ' <span class="night-badge">🌙 Noc</span>';
+                tr.innerHTML = `
+                    <td>${r.date}</td>
+                    <td><strong>${r.worker}</strong></td>
+                    <td>${horarioDisplay}</td>
+                    <td><strong>${r.totalWorked} h</strong></td>
+                    <td><span class="badge-rate badge-30">${r.h30} h</span></td>
+                    <td><span class="badge-rate badge-50">${r.h50} h</span></td>
+                    <td><span class="badge-rate badge-130">${r.h130} h</span></td>
+                    <td>
+                        <button class="btn-action" onclick="editRecord('${r.id}')" title="Editar">✏️</button>
+                        <button class="btn-action" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateTotals() {
+            const filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
+            let total30 = 0, total50 = 0, total130 = 0;
+            filtered.forEach(r => {
+                total30 += parseFloat(r.h30) || 0;
+                total50 += parseFloat(r.h50) || 0;
+                total130 += parseFloat(r.h130) || 0;
+            });
+            const valorHora = parseFloat(document.getElementById('valorHora').value) || 0;
+            const monto30 = total30 * valorHora * 1.3;
+            const monto50 = total50 * valorHora * 1.5;
+            const monto130 = total130 * valorHora * 2.3;
+            const totalNocturnas = total30 + total130;
+            const montoNocturnas = monto30 + monto130;
+            const totalPagar = monto30 + monto50 + monto130;
+
+            document.getElementById('total30').innerText = total30.toFixed(1) + 'h';
+            document.getElementById('total50').innerText = total50.toFixed(1) + 'h';
+            document.getElementById('total130').innerText = total130.toFixed(1) + 'h';
+            document.getElementById('totalNight').innerText = totalNocturnas.toFixed(1) + 'h';
+
+            const formatCurrency = (val) => val === 0 ? '0 PYG' : val.toLocaleString('es-PY', { style: 'currency', currency: 'PYG', minimumFractionDigits: 0 });
+            document.getElementById('monto30').innerText = formatCurrency(monto30);
+            document.getElementById('monto50').innerText = formatCurrency(monto50);
+            document.getElementById('monto130').innerText = formatCurrency(monto130);
+            document.getElementById('montoNight').innerText = formatCurrency(montoNocturnas);
+            document.getElementById('totalPagar').innerText = formatCurrency(totalPagar);
+
+            if (valorHora > 0 && (total30 + total50 + total130) > 0) {
+                document.getElementById('totalPagarDetalle').innerHTML =
+                    `30%: ${formatCurrency(monto30)} | 50%: ${formatCurrency(monto50)} | 130%: ${formatCurrency(monto130)}`;
+            } else {
+                document.getElementById('totalPagarDetalle').innerHTML = '';
+            }
+        }
+
+        function updateCharts() {
+            let filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
+            let sum30 = 0, sum50 = 0, sum130 = 0;
+            filtered.forEach(r => {
+                sum30 += parseFloat(r.h30) || 0;
+                sum50 += parseFloat(r.h50) || 0;
+                sum130 += parseFloat(r.h130) || 0;
+            });
+            const labels = ['Nocturnidad 30%', 'Extra 50%', 'Extra Nocturna 130%'];
+            const values = [sum30, sum50, sum130];
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--palma-yellow').trim() || '#ffff00';
+            const colors = [accentColor, '#50ffb1', '#ff7be8'];
+            const hasData = values.some(v => v > 0);
+
+            // Pie
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            if (pieChartInstance) pieChartInstance.destroy();
+            pieChartInstance = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: hasData ? labels : ['Sin datos'],
+                    datasets: [{
+                        data: hasData ? values : [1],
+                        backgroundColor: hasData ? colors : ['#141518'],
+                        borderColor: 'transparent',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: hasData,
+                            callbacks: {
+                                label: (ctx) => {
+                                    const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                    const pct = ((ctx.parsed / total) * 100).toFixed(1);
+                                    return `${ctx.label}: ${ctx.parsed.toFixed(1)}h (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Bar
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            if (barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Horas',
+                        data: values,
+                        backgroundColor: colors,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: '#ccc' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+                        x: { ticks: { color: '#ccc' }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ================================================================
+        // EVENTO DEL FORMULARIO (CORREGIDO)
+        // ================================================================
+        document.getElementById('shiftForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // *** DEPURACIÓN: Ver si el evento se dispara ***
+            console.log('Botón presionado - formulario enviado');
+
+            const worker = document.getElementById('worker').value;
+            const date = document.getElementById('date').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const hasBreak = document.getElementById('break30').checked;
+
+            if (!date || !startTime || !endTime) {
+                alert('Por favor, completa todos los campos.');
+                return;
+            }
+
+            const result = calculateHours(worker, date, startTime, endTime, hasBreak);
+
+            const recordData = {
+                date,
+                worker,
+                startTime,
+                endTime,
+                hasBreak,
+                ...result
+            };
+
+            const isEdit = (editingId !== null);
+            try {
+                const ok = await saveRecord(recordData, isEdit);
+                if (!ok) {
+                    showNotification('❌ No se pudo guardar el registro. Revisa la conexión.', 'error');
+                }
+            } catch (error) {
+                console.error('Error en submit:', error);
+                showNotification('❌ Error inesperado al guardar', 'error');
+            }
+        });
+
+        // ================================================================
+        // EXPORTAR CSV
+        // ================================================================
+        function exportCSV() {
+            if (records.length === 0) {
+                alert('No existen registros para exportar.');
+                return;
+            }
+            let csv = 'Fecha,Empleado,Entrada,Salida,Total Horas,Nocturnidad 30%,Extra 50%,Extra Nocturna 130%\n';
+            records.forEach(r => {
+                csv += `${r.date},${r.worker},${r.startTime},${r.endTime},${r.totalWorked},${r.h30},${r.h50},${r.h130}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `control_horas_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification('📤 CSV exportado con éxito', 'success');
+        }
+
+        // ================================================================
+        // COLORES Y ANIMACIONES (MANTENIDOS)
+        // ================================================================
+        const bgColorPicker = document.getElementById('bgColorPicker');
+        const cardColorPicker = document.getElementById('cardColorPicker');
+        const borderColorPicker = document.getElementById('borderColorPicker');
+        const accentColorPicker = document.getElementById('accentColorPicker');
+
+        const defaultColors = { bg: '#1d1e22', card: '#2a2b30', border: '#4a4b52', accent: '#ffff00' };
+        let colorTimeout = null;
+
+        function scheduleThemeUpdate() {
+            if (colorTimeout) cancelAnimationFrame(colorTimeout);
+            colorTimeout = requestAnimationFrame(() => {
+                applyFullTheme(
+                    bgColorPicker.value,
+                    cardColorPicker.value,
+                    borderColorPicker.value,
+                    accentColorPicker.value
+                );
+                colorTimeout = null;
+            });
+        }
+
+        function loadSavedColors() {
+            const bg = localStorage.getItem('userBgColor') || defaultColors.bg;
+            const card = localStorage.getItem('userCardColor') || defaultColors.card;
+            const border = localStorage.getItem('userBorderColor') || defaultColors.border;
+            const accent = localStorage.getItem('userAccentColor') || defaultColors.accent;
+            bgColorPicker.value = bg;
+            cardColorPicker.value = card;
+            borderColorPicker.value = border;
+            accentColorPicker.value = accent;
+            applyFullTheme(bg, card, border, accent);
+        }
+
+        function applyFullTheme(bg, card, border, accent) {
+            localStorage.setItem('userBgColor', bg);
+            localStorage.setItem('userCardColor', card);
+            localStorage.setItem('userBorderColor', border);
+            localStorage.setItem('userAccentColor', accent);
+            document.documentElement.style.setProperty('--bg-primary', bg);
+            document.documentElement.style.setProperty('--bg-card', card);
+            document.documentElement.style.setProperty('--bg-input', adjustBrightness(card, -10));
+            document.documentElement.style.setProperty('--border-color', border);
+            document.documentElement.style.setProperty('--palma-yellow', accent);
+            document.documentElement.style.setProperty('--palma-yellow-bright', adjustBrightness(accent, 20));
+            const topColor = adjustBrightness(bg, 30);
+            document.body.style.background = `radial-gradient(circle at top center, ${topColor} 0%, ${bg} 70%)`;
+            document.querySelectorAll('.stat-card-highlight').forEach(el => {
+                el.style.borderColor = accent;
+                el.style.boxShadow = `0 12px 28px rgba(${hexToRgb(accent)}, 0.2), 0 4px 0px #a3a300`;
+            });
+        }
+
+        function adjustBrightness(hex, percent) {
+            let num = parseInt(hex.replace('#', ''), 16);
+            let amt = Math.round(2.55 * percent);
+            let R = (num >> 16) + amt, G = (num >> 8 & 0x00FF) + amt, B = (num & 0x0000FF) + amt;
+            R = Math.min(255, Math.max(0, R));
+            G = Math.min(255, Math.max(0, G));
+            B = Math.min(255, Math.max(0, B));
+            return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+        }
+
+        function hexToRgb(hex) {
+            return `${parseInt(hex.slice(1,3), 16)}, ${parseInt(hex.slice(3,5), 16)}, ${parseInt(hex.slice(5,7), 16)}`;
+        }
+
+        bgColorPicker.addEventListener('input', scheduleThemeUpdate);
+        cardColorPicker.addEventListener('input', scheduleThemeUpdate);
+        borderColorPicker.addEventListener('input', scheduleThemeUpdate);
+        accentColorPicker.addEventListener('input', scheduleThemeUpdate);
+
+        let isAnimationEnabled = localStorage.getItem('userAnimState') !== 'disabled';
+
+        function updateAnimUI() {
+            const btn = document.getElementById('animToggleBtn');
+            if (isAnimationEnabled) {
+                document.body.classList.remove('no-anim');
+                btn.innerHTML = '🎬 Anim: ON';
+                btn.style.color = 'var(--palma-yellow)';
+                localStorage.setItem('userAnimState', 'enabled');
+            } else {
+                document.body.classList.add('no-anim');
+                btn.innerHTML = '⏸️ Anim: OFF';
+                btn.style.color = '#ff7be8';
+                localStorage.setItem('userAnimState', 'disabled');
+            }
+        }
+
+        function toggleAnimation() {
+            isAnimationEnabled = !isAnimationEnabled;
+            updateAnimUI();
+        }
+
+        function resetTheme() {
+            bgColorPicker.value = defaultColors.bg;
+            cardColorPicker.value = defaultColors.card;
+            borderColorPicker.value = defaultColors.border;
+            accentColorPicker.value = defaultColors.accent;
+            applyFullTheme(defaultColors.bg, defaultColors.card, defaultColors.border, defaultColors.accent);
+            isAnimationEnabled = true;
+            updateAnimUI();
+        }
+
+        loadSavedColors();
+        updateAnimUI();
+
+        // ================================================================
+        // INICIALIZACIÓN
+        // ================================================================
+        loadData();
+        cancelEdit();
+    </script>
+</body>
+</html>
