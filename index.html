@@ -375,7 +375,7 @@
                                     <th>Fecha</th>
                                     <th>Empleado</th>
                                     <th>Horario</th>
-                                    <th>Efectivas</th>
+                                    <th>Turno</th> <!-- CAMBIADO: Antes decía "Efectivas" -->
                                     <th>Noc 30%</th>
                                     <th>Extra 50%</th>
                                     <th>Extra Noc 130%</th>
@@ -706,7 +706,7 @@
         }
 
         // ==============================================================
-        // RENDERIZADO DE TABLA CON LA NUEVA LÓGICA DE COLORES
+        // RENDERIZADO DE TABLA CON LA NUEVA LÓGICA DE COLORES Y TURNO
         // ==============================================================
         function renderTable() {
             const tbody = document.getElementById('recordsTable');
@@ -742,11 +742,14 @@
                 const class50 = h50 > 0 ? 'cell-50-dark' : 'cell-50';
                 const class130 = h130 > 0 ? 'cell-130-dark' : 'cell-130';
 
+                // CAMBIO VISUAL DEL TURNO: Si tiene (30m), mostramos 12.0 h en pantalla (los cálculos internos siguen con 11.5)
+                const turnoDisplay = r.breakApplied ? '12.0 h' : `${r.totalWorked} h`;
+
                 tr.innerHTML = `
                     <td class="${dateCellClass}">${dateDisplay}</td>
                     <td><strong>${r.worker}</strong></td>
                     <td>${horarioDisplay}</td>
-                    <td><strong>${r.totalWorked} h</strong></td>
+                    <td><strong>${turnoDisplay}</strong></td>
                     <td class="${class30}">${r.h30} h</td>
                     <td class="${class50}">${r.h50} h</td>
                     <td class="${class130}">${r.h130} h</td>
@@ -876,12 +879,15 @@
                 const bg130 = h130 > 0 ? 'background-color: #f0ddf7;' : 'background-color: #f8f0fb;';
                 const border130 = h130 > 0 ? 'border: 2px solid #6a3185;' : 'border: 1px solid #7d3c98;';
 
+                // Visualización del Turno en Excel
+                const turnoDisplay = r.breakApplied ? '12.0 h' : `${r.totalWorked} h`;
+
                 rowsHTML += `
                     <tr>
                         <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: ${hasExtras ? 'bold' : 'normal'};">${dateDisplay}</td>
                         <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${r.worker}</td>
                         <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center;">${horarioDisplay}</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${r.totalWorked} h</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${turnoDisplay}</td>
                         <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg30} ${border30} color: #b38600; font-weight: 600;">${r.h30} h</td>
                         <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg50} ${border50} color: #3c6b20; font-weight: 600;">${r.h50} h</td>
                         <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg130} ${border130} color: #5c2a70; font-weight: 600;">${r.h130} h</td>
@@ -904,7 +910,7 @@
                     <table>
                         <tr class="title-row"><td colspan="8">Control de Horas</td></tr>
                         <thead><tr>
-                            <th>Fecha</th><th>Empleado</th><th>Horario</th><th>Efectivas</th>
+                            <th>Fecha</th><th>Empleado</th><th>Horario</th><th>Turno</th>
                             <th>Noc 30%</th><th>Extra 50%</th><th>Extra Noc 130%</th><th>Acciones</th>
                         </tr></thead>
                         <tbody>${rowsHTML}</tbody>
