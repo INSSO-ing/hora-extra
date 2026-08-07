@@ -10,619 +10,268 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <style>
+        /* ==============================================================
+               COLORES ESTÁNDAR DE EXCEL (Guardados en el sistema)
+               ============================================================== */
         :root {
-            --palma-yellow: #ffff00;
-            --palma-yellow-bright: #ffff33;
-            --bg-primary: #1d1e22;
-            --bg-card: #2a2b30;
-            --bg-input: #141518;
-            --border-color: #4a4b52;
-            --text-main: #ffffff;
-            --text-dark: #1a1a1a;
-            --text-muted: #d0aaee;
+            --primary-color: #0056b3;      /* Azul corporativo */
+            --bg-page: #f0f2f5;            /* Fondo gris claro */
+            --bg-card: #ffffff;            /* Fondo blanco para tarjetas */
+            --bg-input: #f9fafb;           /* Fondo de inputs */
+            --border-color: #d1d5db;       /* Bordes sutiles */
+            --text-main: #1f2937;          /* Texto oscuro principal */
+            --text-muted: #6b7280;         /* Texto secundario */
+            --shadow-card: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-btn: 0 2px 4px rgba(0,86,179,0.3);
+            --danger: #dc2626;
             --michael-color: #9d00ff;
             --nico-color: #ff007f;
-            --danger: #ff4d4d;
-            --shadow-3d: 0 12px 20px -6px rgba(0, 0, 0, 0.6), 0 4px 0px #121315;
-            --shadow-3d-yellow: 0 12px 28px rgba(255, 255, 0, 0.2), 0 4px 0px #a3a300;
-            --shadow-3d-btn: 0 6px 0px #b3a700, 0 12px 20px rgba(0, 0, 0, 0.4);
-            --shadow-3d-btn-active: 0 2px 0px #b3a700, 0 6px 10px rgba(0, 0, 0, 0.3);
+
+            /* Colores base de la tabla (Referencia Excel) */
+            --excel-yellow-bg: #fffceb;
+            --excel-yellow-border: #e6ae00;
+            --excel-yellow-text: #b38600;
+            --excel-yellow-dark-bg: #fff5cf; /* Un poco más oscuro */
+            --excel-yellow-dark-border: #c39200;
+            
+            --excel-green-bg: #f3f9ef;
+            --excel-green-border: #5c9139;
+            --excel-green-text: #3c6b20;
+            --excel-green-dark-bg: #e4f0db; /* Un poco más oscuro */
+            --excel-green-dark-border: #4b7a2e;
+            
+            --excel-purple-bg: #f8f0fb;
+            --excel-purple-border: #7d3c98;
+            --excel-purple-text: #5c2a70;
+            --excel-purple-dark-bg: #f0ddf7; /* Un poco más oscuro */
+            --excel-purple-dark-border: #6a3185;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
         body {
-            background-color: var(--bg-primary);
+            background-color: var(--bg-page);
             color: var(--text-main);
             padding: 24px 16px;
             line-height: 1.5;
-            background: radial-gradient(circle at top center, #32333a 0%, var(--bg-primary) 70%);
             min-height: 100vh;
-            perspective: 1000px;
-            transition: background 0.3s ease;
-            will-change: background;
         }
         .container { max-width: 1400px; margin: 0 auto; }
 
         /* Toast */
         #toast-container {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: flex-end;
-            pointer-events: none;
+            position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; pointer-events: none;
         }
         .toast {
-            background: var(--bg-card);
-            border: 2px solid var(--palma-yellow);
-            border-radius: 12px;
-            padding: 14px 24px 14px 20px;
-            box-shadow: var(--shadow-3d-yellow), 0 8px 20px rgba(0,0,0,0.6);
-            color: var(--text-main);
-            font-weight: 600;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transform: translateX(120%);
-            opacity: 0;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease;
-            pointer-events: auto;
-            backdrop-filter: blur(4px);
-            min-width: 240px;
-            max-width: 400px;
+            background: #ffffff; border: 1px solid var(--border-color); border-left: 4px solid var(--primary-color); border-radius: 8px; padding: 14px 24px 14px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); color: var(--text-main); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 12px; transform: translateX(120%); opacity: 0; transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease; pointer-events: auto; min-width: 240px; max-width: 400px;
         }
         .toast.show { transform: translateX(0); opacity: 1; }
         .toast .toast-icon { font-size: 1.4rem; }
-        .toast .toast-close {
-            background: none; border: none; color: var(--text-muted);
-            cursor: pointer; font-size: 1.2rem; margin-left: auto; padding: 0 4px;
-            transition: color 0.2s;
-        }
-        .toast .toast-close:hover { color: var(--palma-yellow); }
+        .toast .toast-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; margin-left: auto; padding: 0 4px; transition: color 0.2s; }
+        .toast .toast-close:hover { color: var(--primary-color); }
 
         /* Header */
         header {
-            position: relative;
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 32px 20px;
             background: var(--bg-card);
-            border-radius: 20px;
-            border: 2px solid var(--border-color);
-            box-shadow: var(--shadow-3d);
-            transform-style: preserve-3d;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-            will-change: transform, box-shadow;
-        }
-        header:hover { transform: translateY(-4px) rotateX(2deg) rotateY(-1deg) scale(1.005); box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.7), 0 6px 0px #121315; }
-
-        .controls-wrapper {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 6px 12px;
-            border-radius: 40px;
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-card);
             border: 1px solid var(--border-color);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            backdrop-filter: blur(8px);
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            z-index: 10;
-        }
-        .color-picker-group { display: flex; align-items: center; gap: 3px; }
-        .color-picker-group label { font-size: 0.55rem; color: var(--palma-yellow); font-weight: 800; text-transform: uppercase; letter-spacing: 0.2px; margin: 0; cursor: pointer; }
-        .controls-wrapper input[type="color"] { -webkit-appearance: none; border: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; background: transparent; padding: 0; }
-        .controls-wrapper input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        .controls-wrapper input[type="color"]::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .toggle-anim-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--palma-yellow);
-            padding: 3px 8px;
-            border-radius: 15px;
-            font-size: 0.65rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            white-space: nowrap;
-        }
-        .toggle-anim-btn:hover { transform: scale(1.04); border-color: var(--palma-yellow); }
-        .reset-bg-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 0.9rem; transition: color 0.2s, transform 0.3s ease; padding: 0 3px; }
-        .reset-bg-btn:hover { color: var(--palma-yellow); transform: rotate(-180deg) scale(1.08); }
-
-        header h1 {
-            color: var(--palma-yellow);
-            font-size: 3.6rem;
-            font-weight: 900;
-            margin-bottom: 6px;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-            display: inline-block;
-            transform-style: preserve-3d;
-            perspective: 300px;
-            text-shadow: 0 1px 0 #b2b200, 0 2px 0 #999900, 0 3px 0 #808000, 0 4px 0 #666600, 0 5px 0 #4d4d00, 0 10px 20px rgba(0, 0, 0, 0.7);
-            animation: flying3D 8s ease-in-out infinite alternate;
-            transition: text-shadow 0.3s ease, color 0.3s ease;
-            will-change: transform, text-shadow;
-        }
-        header h1:hover {
-            animation-play-state: paused;
-            transform: scale(1.03) rotateY(-3deg);
-            text-shadow: 0 1px 0 #b2b200, 0 3px 0 #999900, 0 5px 0 #808000, 0 7px 0 #666600, 0 9px 0 #4d4d00, 0 15px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 0, 0.4);
-        }
-        @keyframes flying3D {
-            0% { transform: translateZ(0px) translateY(0px) rotateX(0deg) rotateY(0deg) scale(1); text-shadow: 0 1px 0 #b2b200, 0 2px 0 #999900, 0 3px 0 #808000, 0 4px 0 #666600, 0 5px 0 #4d4d00, 0 10px 20px rgba(0, 0, 0, 0.7); }
-            35% { transform: translateZ(35px) translateY(-10px) rotateX(5deg) rotateY(-8deg) scale(1.015); text-shadow: -2px 2px 0 #b2b200, -4px 4px 0 #999900, -6px 6px 0 #808000, -8px 8px 0 #666600, -10px 10px 0 #4d4d00, -15px 20px 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 255, 0, 0.4); }
-            65% { transform: translateZ(20px) translateY(-5px) rotateX(-6deg) rotateY(10deg) scale(0.99); text-shadow: 3px 2px 0 #b2b200, 6px 4px 0 #999900, 9px 6px 0 #808000, 12px 8px 0 #666600, 15px 10px 0 #4d4d00, 18px 18px 25px rgba(0, 0, 0, 0.8); }
-            100% { transform: translateZ(50px) translateY(-15px) rotateX(8deg) rotateY(4deg) scale(1.04); text-shadow: 0 2px 0 #b2b200, 0 4px 0 #999900, 0 6px 0 #808000, 0 8px 0 #666600, 0 10px 0 #4d4d00, 0 20px 40px rgba(0, 0, 0, 0.95), 0 0 30px rgba(255, 255, 0, 0.5); }
-        }
-        body.no-anim header h1 { animation: none !important; transform: none !important; text-shadow: 0 4px 8px rgba(0,0,0,0.7) !important; }
-        body.no-anim header:hover, body.no-anim .card:hover, body.no-anim .params-card:hover, body.no-anim .stat-card:hover, body.no-anim .chart-box:hover { transform: none !important; box-shadow: var(--shadow-3d) !important; }
-
-        header p { color: var(--text-muted); font-size: 0.95rem; font-weight: 600; }
-        .schedules-badge { display: flex; justify-content: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
-        .badge {
-            background-color: var(--bg-input);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            border: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-            transition: transform 0.25s ease, background-color 0.3s ease;
-            will-change: transform;
-        }
-        .badge:hover { transform: translateZ(10px) scale(1.02); }
-
-        .params-card {
-            background-color: var(--bg-card);
-            border-radius: 16px;
-            padding: 18px 22px;
-            margin-bottom: 24px;
-            border: 2px solid var(--border-color);
-            box-shadow: var(--shadow-3d);
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
-            transform-style: preserve-3d;
-            will-change: transform, box-shadow;
         }
-        .params-card:hover { transform: translateY(-3px) rotateX(1deg) scale(1.003); border-color: var(--palma-yellow); box-shadow: 0 16px 28px -6px rgba(0, 0, 0, 0.6), 0 6px 0px #121315; }
-        .params-card h2 { font-size: 1rem; color: var(--palma-yellow); display: flex; align-items: center; gap: 6px; margin: 0; text-transform: uppercase; letter-spacing: 0.3px; font-weight: 800; }
+        .header-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            letter-spacing: -0.5px;
+        }
+        header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .header-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .color-picker-group { display: flex; align-items: center; gap: 6px; background: var(--bg-input); padding: 4px 8px; border-radius: 40px; border: 1px solid var(--border-color); }
+        .color-picker-group label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); cursor: pointer; }
+        .header-controls input[type="color"] { -webkit-appearance: none; border: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; background: transparent; padding: 0; }
+        .header-controls input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        .header-controls input[type="color"]::-webkit-color-swatch { border: 2px solid var(--border-color); border-radius: 50%; }
+        .toggle-anim-btn, .reset-bg-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
+        .toggle-anim-btn:hover, .reset-bg-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+
+        .schedules-badge { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; width: 100%; }
+        .badge { background: var(--bg-input); padding: 4px 12px; border-radius: 16px; font-size: 0.75rem; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 4px; color: var(--text-main); }
+        .badge span { font-weight: 700; }
+
+        /* Tarjetas y Formularios */
+        .params-card { background: var(--bg-card); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-card); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+        .params-card h2 { font-size: 1rem; color: var(--primary-color); display: flex; align-items: center; gap: 6px; margin: 0; font-weight: 700; }
         .params-wrapper { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
         .param-group { display: flex; align-items: center; gap: 8px; }
         .params-card label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
-        .params-card input {
-            width: 150px;
-            padding: 6px 10px;
-            border-radius: 8px;
-            background-color: var(--bg-input);
-            border: 1.5px solid var(--border-color);
-            color: var(--text-main);
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
-        }
-        .params-card input:focus { border-color: var(--palma-yellow); box-shadow: 0 0 10px rgba(255, 255, 0, 0.15), inset 0 2px 4px rgba(0,0,0,0.4); }
-        .valor-hora-display {
-            font-size: 1rem;
-            font-weight: 800;
-            color: var(--palma-yellow);
-            background: rgba(0, 0, 0, 0.3);
-            padding: 6px 14px;
-            border-radius: 10px;
-            border: 1px solid var(--palma-yellow);
-            box-shadow: inset 0 0 8px rgba(255, 255, 0, 0.1);
-        }
+        .params-card input { width: 150px; padding: 6px 10px; border-radius: 6px; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.9rem; outline: none; transition: border-color 0.2s ease; }
+        .params-card input:focus { border-color: var(--primary-color); }
+        .valor-hora-display { font-size: 1rem; font-weight: 700; color: var(--primary-color); padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); }
 
         .grid-layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
-        @media (max-width: 960px) {
-            .grid-layout { grid-template-columns: 1fr; }
-            .params-card, .params-wrapper { flex-direction: column; align-items: stretch; }
-            .params-card input { width: 100%; }
-            .controls-wrapper { position: static; margin: 0 auto 12px auto; width: fit-content; justify-content: center; border-radius: 30px; }
-        }
+        @media (max-width: 960px) { .grid-layout { grid-template-columns: 1fr; } }
 
-        .card {
-            background-color: var(--bg-card);
-            border-radius: 16px;
-            padding: 22px;
-            border: 2px solid var(--border-color);
-            box-shadow: var(--shadow-3d);
-            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
-            transform-style: preserve-3d;
-            will-change: transform, box-shadow;
-        }
-        .card:hover { transform: translateY(-5px) rotateX(1.5deg) rotateY(2deg) scale(1.006); border-color: var(--palma-yellow); box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.7), 0 6px 0px #121315; }
-        .card h2 { font-size: 1.1rem; margin-bottom: 18px; color: var(--palma-yellow); display: flex; align-items: center; gap: 6px; text-transform: uppercase; font-weight: 800; }
+        .card { background: var(--bg-card); border-radius: 10px; padding: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-card); }
+        .card h2 { font-size: 1.1rem; margin-bottom: 16px; color: var(--primary-color); display: flex; align-items: center; gap: 6px; font-weight: 700; }
         .form-group { margin-bottom: 14px; }
         label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
-        select, input[type="date"], input[type="time"] {
-            width: 100%;
-            padding: 8px 12px;
-            border-radius: 8px;
-            background-color: var(--bg-input);
-            border: 1.5px solid var(--border-color);
-            color: var(--text-main);
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
-        }
-        select:focus, input:focus { border-color: var(--palma-yellow); box-shadow: 0 0 10px rgba(255, 255, 0, 0.12), inset 0 2px 4px rgba(0,0,0,0.4); }
+        select, input[type="date"], input[type="time"] { width: 100%; padding: 8px 12px; border-radius: 6px; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.9rem; outline: none; transition: border-color 0.2s ease; }
+        select:focus, input:focus { border-color: var(--primary-color); }
         .preset-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
-        .preset-btn {
-            padding: 6px;
-            background-color: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            border-radius: 8px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 0 2px 0px var(--border-color);
-        }
-        .preset-btn:hover { background-color: var(--border-color); color: white; transform: translateY(-2px); box-shadow: 0 4px 0px #121315; }
-        .preset-btn:active { transform: translateY(1px); box-shadow: 0 1px 0px #121315; }
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            background: rgba(0,0,0,0.15);
-            padding: 8px 12px;
-            border-radius: 8px;
-        }
-        .checkbox-group input { width: 16px; height: 16px; accent-color: var(--palma-yellow); cursor: pointer; }
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, var(--palma-yellow-bright) 0%, var(--palma-yellow) 100%);
-            color: var(--text-dark);
-            font-weight: 900;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: all 0.12s ease;
-            box-shadow: var(--shadow-3d-btn);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            position: relative;
-            top: 0;
-            will-change: transform, box-shadow;
-        }
-        .btn:hover { background: linear-gradient(135deg, #ffff66 0%, var(--palma-yellow-bright) 100%); transform: translateY(-3px) scale(1.008); box-shadow: 0 8px 0px #b3a700, 0 12px 20px rgba(255, 255, 0, 0.3); }
-        .btn:active { top: 4px; box-shadow: var(--shadow-3d-btn-active); transform: scale(0.98); }
+        .preset-btn { padding: 6px; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .preset-btn:hover { background-color: #e5e7eb; border-color: var(--primary-color); color: var(--primary-color); }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; border-radius: 6px; background: var(--bg-input); border: 1px solid var(--border-color); }
+        .checkbox-group input { width: 16px; height: 16px; accent-color: var(--primary-color); cursor: pointer; }
+        .btn { width: 100%; padding: 12px; background: var(--primary-color); color: white; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; box-shadow: var(--shadow-btn); }
+        .btn:hover { background: #004494; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,86,179,0.3); }
 
+        /* Tarjetas de Resumen */
         .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 22px; }
-        .stat-card {
-            background-color: var(--bg-card);
-            border: 2px solid var(--border-color);
-            border-radius: 14px;
-            padding: 14px 10px;
-            text-align: center;
-            box-shadow: var(--shadow-3d);
-            transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.25s ease, border-color 0.25s ease;
-            transform-style: preserve-3d;
-            will-change: transform, box-shadow;
-        }
-        .stat-card:hover { transform: translateY(-5px) rotateX(2deg) scale(1.015); border-color: var(--palma-yellow); box-shadow: 0 16px 28px -6px rgba(0, 0, 0, 0.6), 0 4px 0px #121315; }
-        .stat-card .title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.3px; }
-        .stat-card .value { font-size: 1.4rem; font-weight: 900; margin-top: 4px; }
-        .stat-card .monto { font-size: 0.85rem; color: var(--palma-yellow); margin-top: 2px; font-weight: 700; }
-        .val-30 { color: var(--palma-yellow); }
-        .val-50 { color: #50ffb1; }
-        .val-130 { color: #ff7be8; }
-        .val-night-total { color: #ffffff; }
-        .stat-card-highlight { border-color: var(--palma-yellow) !important; background: linear-gradient(135deg, #3d004d 0%, #200029 100%) !important; box-shadow: var(--shadow-3d-yellow) !important; }
-        .stat-card-highlight .title { color: var(--palma-yellow) !important; }
-        .monto-total { font-size: 1.8rem; color: var(--palma-yellow); font-weight: 900; text-shadow: 0 0 12px rgba(255, 255, 0, 0.25); margin-top: 2px; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 10px; text-align: center; box-shadow: var(--shadow-card); }
+        .stat-card .title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.3px; }
+        .stat-card .value { font-size: 1.4rem; font-weight: 800; margin-top: 4px; color: var(--text-main); }
+        .stat-card .monto { font-size: 0.85rem; color: var(--primary-color); margin-top: 2px; font-weight: 600; }
+        .val-30 { color: var(--excel-yellow-text); }
+        .val-50 { color: var(--excel-green-text); }
+        .val-130 { color: var(--excel-purple-text); }
+        .stat-card-highlight { border-color: var(--primary-color) !important; background: #f8fafc !important; }
+        .stat-card-highlight .title { color: var(--primary-color) !important; }
+        .monto-total { font-size: 1.8rem; color: var(--primary-color); font-weight: 800; margin-top: 2px; }
         .monto-detalle { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
 
-        .filter-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
-        .filter-bar h2 { font-size: 1rem; margin: 0; white-space: nowrap; }
+        /* Filtros y botones */
+        .filter-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .filter-bar h2 { font-size: 1rem; margin: 0; white-space: nowrap; color: var(--primary-color); }
         .filter-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .filter-btn {
-            padding: 5px 14px;
-            border-radius: 20px;
-            border: 1.5px solid var(--border-color);
-            background-color: var(--bg-input);
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 0.78rem;
-            font-weight: 700;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 0px rgba(0,0,0,0.3);
-        }
-        .filter-btn:hover { border-color: var(--palma-yellow); color: var(--palma-yellow); transform: translateY(-2px); box-shadow: 0 4px 0px rgba(0,0,0,0.3); }
-        .filter-btn.active { color: var(--text-dark); font-weight: 900; }
-        .filter-btn.michael.active { background-color: var(--michael-color); border-color: var(--michael-color); color: #fff; }
-        .filter-btn.nico.active { background-color: var(--nico-color); border-color: var(--nico-color); color: #fff; }
-        .filter-btn.todos.active { background-color: var(--palma-yellow); border-color: var(--palma-yellow); color: var(--text-dark); }
-        .btn-export {
-            background-color: #50ffb1;
-            color: #000;
-            padding: 5px 14px;
-            border-radius: 8px;
-            font-weight: 800;
-            font-size: 0.78rem;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 0px #22b874;
-        }
-        .btn-export:hover { transform: translateY(-2px); box-shadow: 0 4px 0px #22b874; }
-        .clear-btn {
-            background-color: rgba(255, 77, 77, 0.15);
-            color: var(--danger);
-            border: 1px solid rgba(255, 77, 77, 0.3);
-            padding: 5px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.78rem;
-            font-weight: 700;
-            transition: all 0.2s ease;
-        }
-        .clear-btn:hover { background-color: var(--danger); color: white; transform: scale(1.02); }
+        .filter-btn { padding: 4px 12px; border-radius: 16px; border: 1px solid var(--border-color); background-color: var(--bg-input); color: var(--text-muted); cursor: pointer; font-size: 0.78rem; font-weight: 600; transition: all 0.2s ease; }
+        .filter-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .filter-btn.active { background-color: var(--primary-color); border-color: var(--primary-color); color: white; }
+        .filter-btn.michael.active { background-color: var(--michael-color); border-color: var(--michael-color); color: white; }
+        .filter-btn.nico.active { background-color: var(--nico-color); border-color: var(--nico-color); color: white; }
+        .btn-export-excel { background-color: #1d6f42; color: white; padding: 4px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; border: none; cursor: pointer; transition: all 0.2s ease; }
+        .btn-export-excel:hover { background-color: #145a34; transform: scale(1.02); }
+        .btn-export-pdf { background-color: #b91c1c; color: white; padding: 4px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; border: none; cursor: pointer; transition: all 0.2s ease; }
+        .btn-export-pdf:hover { background-color: #991b1b; transform: scale(1.02); }
+        .clear-btn { background-color: #fee2e2; color: var(--danger); border: 1px solid #fca5a5; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; transition: all 0.2s ease; }
+        .clear-btn:hover { background-color: var(--danger); color: white; border-color: var(--danger); }
 
-        /* ============================================================== */
-        /* ===== ESTILOS PARA DAR ASPECTO DE EXCEL A LA TABLA ===== */
-        .table-container {
-            overflow-x: auto;
-            background-color: #ffffff;
-            border: 1px solid #a0a0a0;
-            border-radius: 0;
-            box-shadow: none;
-            margin-top: 8px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-family: 'Calibri', 'Arial', 'Segoe UI', sans-serif;
-            font-size: 13px;
-            color: #000000;
-        }
-        thead tr {
-            background-color: #0070C0;
-        }
-        th {
-            color: #ffffff !important;
-            font-weight: bold;
-            padding: 8px 12px !important;
-            border: 1px solid #0070C0 !important;
-            text-align: center !important;
-            text-transform: none !important;
-            letter-spacing: 0 !important;
-            font-size: 13px !important;
-            background-color: #0070C0 !important;
-        }
-        td {
-            padding: 6px 10px !important;
-            border: 1px solid #d0d0d0 !important;
-            text-align: center !important;
-            vertical-align: middle !important;
-            color: #333333 !important;
-            background-color: #ffffff;
-        }
-        /* Efecto Cebra (Filas alternadas) */
-        tbody tr:nth-child(odd) td {
-            background-color: #f9f9f9;
-        }
-        tbody tr:nth-child(even) td {
-            background-color: #ffffff;
-        }
-        /* Hover estilo Excel */
-        tbody tr:hover td {
-            background-color: #e6e6e6 !important;
-        }
-        /* Colores para los empleados (Borde izquierdo y fondo sutil) */
-        tr.michael-row td {
-            background-color: #f3e6f8 !important;
-            border-left: 3px solid #9d00ff !important;
-        }
-        tr.nico-row td {
-            background-color: #fce4ec !important;
-            border-left: 3px solid #ff007f !important;
-        }
-        /* Estilo de los Badges (celdas de horas) */
-        .badge-rate {
-            padding: 2px 8px;
-            border-radius: 2px;
-            font-weight: bold;
-            display: inline-block;
-            font-size: 12px;
-            border: 1px solid transparent;
-        }
-        .badge-30 {
-            background-color: #FFC000;
-            color: #000000;
-            border: 1px solid #e6ae00;
-        }
-        .badge-50 {
-            background-color: #70AD47;
-            color: #ffffff;
-            border: 1px solid #5c9139;
-        }
-        .badge-130 {
-            background-color: #9B59B6;
-            color: #ffffff;
-            border: 1px solid #7d3c98;
-        }
-        /* Resaltados de Horas Extras (Fondo de celda completo) */
-        .extra-highlight-50 {
-            background-color: #70AD47 !important;
-            color: #ffffff !important;
-            border: 1px solid #5c9139 !important;
-            box-shadow: none !important;
-            font-weight: bold !important;
-        }
-        .extra-highlight-130 {
-            background-color: #9B59B6 !important;
-            color: #ffffff !important;
-            border: 1px solid #7d3c98 !important;
-            box-shadow: none !important;
-            font-weight: bold !important;
-        }
-        /* Celda de Fecha con Extra */
-        .day-extra-active {
-            background-color: #e6f0fa !important;
-            font-weight: bold !important;
-        }
-        .day-badge-extra {
-            background-color: #FFC000;
-            color: #000;
-            padding: 1px 5px;
-            border-radius: 2px;
-            font-size: 11px;
-            display: inline-block;
-            margin-left: 4px;
-            border: 1px solid #e6ae00;
-        }
-        /* Botones de acción (Lápiz y Papelera) */
-        .btn-action {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #0070C0;
-            font-size: 14px !important;
-            padding: 2px 6px;
-            transition: color 0.2s ease;
-        }
-        .btn-action:hover {
-            color: #003366;
-            transform: none !important;
-            font-weight: bold;
-        }
-        /* Etiqueta Noc */
-        .night-badge {
-            background-color: #fce4d6;
-            color: #ed7d31;
-            padding: 1px 6px;
-            border-radius: 2px;
-            font-size: 10px;
-            font-weight: bold;
-            display: inline-block;
-            margin-left: 3px;
-            border: 1px solid #ed7d31;
-        }
-        /* ============================================================== */
+        /* ==============================================================
+               TABLA ESTILO EXCEL (CON RESALTADO MÁS OSCURO SI > 0)
+               ============================================================== */
+        .table-container { overflow-x: auto; background-color: #ffffff; border: 1px solid #d0d0d0; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        table { width: 100%; border-collapse: collapse; font-family: 'Calibri', 'Arial', 'Segoe UI', sans-serif; font-size: 13px; color: #1f2937; }
+        thead tr { background-color: #f8fafc; }
+        th { color: #1f2937 !important; font-weight: 700 !important; padding: 8px 12px !important; border: 1px solid #d0d0d0 !important; text-align: center !important; text-transform: none !important; letter-spacing: 0 !important; font-size: 13px !important; background-color: #f8fafc !important; }
+        td { padding: 6px 10px !important; border: 1px solid #d0d0d0 !important; text-align: center !important; vertical-align: middle !important; background-color: #ffffff; }
+        tbody tr:nth-child(odd) td { background-color: #f9f9f9; }
+        tbody tr:nth-child(even) td { background-color: #ffffff; }
+        tbody tr:hover td { background-color: #e6e6e6 !important; }
+        tr.michael-row td { border-left: 3px solid var(--michael-color); }
+        tr.nico-row td { border-left: 3px solid var(--nico-color); }
 
+        /* Celdas de Horas: BASE (Valor = 0) */
+        .cell-30 { background-color: var(--excel-yellow-bg) !important; border: 1px solid var(--excel-yellow-border) !important; color: var(--excel-yellow-text) !important; font-weight: 600 !important; }
+        .cell-50 { background-color: var(--excel-green-bg) !important; border: 1px solid var(--excel-green-border) !important; color: var(--excel-green-text) !important; font-weight: 600 !important; }
+        .cell-130 { background-color: var(--excel-purple-bg) !important; border: 1px solid var(--excel-purple-border) !important; color: var(--excel-purple-text) !important; font-weight: 600 !important; }
+        
+        /* Celdas de Horas: RESALTADO MÁS OSCURO (Valor > 0) */
+        .cell-30-dark { background-color: var(--excel-yellow-dark-bg) !important; border: 2px solid var(--excel-yellow-dark-border) !important; color: var(--excel-yellow-text) !important; font-weight: 700 !important; }
+        .cell-50-dark { background-color: var(--excel-green-dark-bg) !important; border: 2px solid var(--excel-green-dark-border) !important; color: var(--excel-green-text) !important; font-weight: 700 !important; }
+        .cell-130-dark { background-color: var(--excel-purple-dark-bg) !important; border: 2px solid var(--excel-purple-dark-border) !important; color: var(--excel-purple-text) !important; font-weight: 700 !important; }
+
+        .day-extra-active { font-weight: 700 !important; }
+        .day-badge-extra { border: 1px solid #d1d5db; color: #374151; background-color: #f3f4f6; padding: 1px 5px; border-radius: 12px; font-size: 10px; display: inline-block; margin-left: 4px; font-weight: 600; }
+        .btn-action { background: none; border: none; cursor: pointer; color: #6b7280; font-size: 14px !important; padding: 2px 6px; transition: color 0.2s ease; }
+        .btn-action:hover { color: var(--primary-color); }
+
+        /* Gráficos */
         .chart-wrapper { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 768px) { .chart-wrapper { grid-template-columns: 1fr; } }
-        .chart-box {
-            background-color: var(--bg-card);
-            border-radius: 16px;
-            padding: 18px;
-            border: 2px solid var(--border-color);
-            box-shadow: var(--shadow-3d);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-            transform-style: preserve-3d;
-            will-change: transform, box-shadow;
-        }
-        .chart-box:hover { transform: translateY(-4px) rotateX(1.5deg) scale(1.006); border-color: var(--palma-yellow); box-shadow: 0 16px 28px -6px rgba(0, 0, 0, 0.6), 0 4px 0px #121315; }
-        .chart-box h3 { color: var(--palma-yellow); font-size: 0.9rem; margin-bottom: 10px; width: 100%; text-align: center; text-transform: uppercase; letter-spacing: 0.3px; font-weight: 800; }
+        .chart-box { background: var(--bg-card); border-radius: 10px; padding: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center; }
+        .chart-box h3 { color: var(--primary-color); font-size: 0.9rem; margin-bottom: 10px; width: 100%; text-align: center; font-weight: 700; }
         .chart-box canvas { max-width: 200px; max-height: 200px; }
-        .chart-legend-custom { display: flex; justify-content: center; gap: 14px; margin-top: 12px; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-muted); }
+        .chart-legend-custom { display: flex; justify-content: center; gap: 14px; margin-top: 12px; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-muted); }
         .legend-item { display: flex; align-items: center; gap: 5px; }
         .legend-color { width: 10px; height: 10px; border-radius: 50%; }
 
-        .info-box-bottom {
-            background-color: var(--bg-card);
-            border-left: 4px solid var(--palma-yellow);
-            border-radius: 12px;
-            padding: 14px 18px;
-            margin-top: 22px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--shadow-3d);
-            line-height: 1.5;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        .info-box-bottom strong { color: var(--palma-yellow); }
-        .info-box-bottom .highlight { color: #ff7be8; font-weight: 700; }
-        .footer-notes {
-            margin-top: 18px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .footer-notes span { background: var(--bg-card); padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border-color); transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .info-box-bottom { background: var(--bg-card); border-left: 4px solid var(--primary-color); border-radius: 8px; padding: 14px 18px; margin-top: 22px; font-size: 0.85rem; color: var(--text-muted); border: 1px solid var(--border-color); box-shadow: var(--shadow-card); line-height: 1.6; }
+        .info-box-bottom strong { color: var(--text-main); }
+        .info-box-bottom .highlight { color: #5c2a70; font-weight: 700; }
+        .footer-notes { margin-top: 18px; font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .footer-notes span { background: var(--bg-card); padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border-color); }
         .loading-row td { padding: 30px; color: var(--text-muted); font-style: italic; }
+
+        /* Estilos para impresión/PDF */
+        @media print {
+            body * { visibility: hidden; }
+            .table-container, .table-container * { visibility: visible; }
+            .table-container { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 10px; border: none; box-shadow: none; }
+            .filter-bar, .filter-bar * { visibility: visible; }
+            .filter-bar { position: absolute; left: 0; top: -40px; width: 100%; text-align: center; border: none; background: none; }
+            .filter-bar h2 { font-size: 1.2rem; color: #000; }
+            .filter-controls button { display: none; }
+            .table-container table th { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .table-container table td { background-color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .table-container tbody tr:nth-child(odd) td { background-color: #f9f9f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .cell-30, .cell-30-dark, .cell-50, .cell-50-dark, .cell-130, .cell-130-dark, .day-badge-extra {
+                -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <!-- TOAST -->
         <div id="toast-container"></div>
 
-        <!-- HEADER -->
         <header>
-            <div class="controls-wrapper">
+            <div class="header-title-group">
+                <h1>📋 Control de Horas</h1>
+                <p>Sistema automatizado de gestión y cálculo de horas extras</p>
+            </div>
+            <div class="header-controls">
                 <div class="color-picker-group">
                     <label for="bgColorPicker">⬛</label>
-                    <input type="color" id="bgColorPicker" value="#1d1e22" title="Color de fondo">
+                    <input type="color" id="bgColorPicker" value="#f0f2f5" title="Color de fondo">
                 </div>
                 <div class="color-picker-group">
                     <label for="cardColorPicker">🟦</label>
-                    <input type="color" id="cardColorPicker" value="#2a2b30" title="Color de tarjetas">
+                    <input type="color" id="cardColorPicker" value="#ffffff" title="Color de tarjetas">
                 </div>
                 <div class="color-picker-group">
                     <label for="borderColorPicker">🟫</label>
-                    <input type="color" id="borderColorPicker" value="#4a4b52" title="Color de bordes">
+                    <input type="color" id="borderColorPicker" value="#d1d5db" title="Color de bordes">
                 </div>
                 <div class="color-picker-group">
                     <label for="accentColorPicker">🌟</label>
-                    <input type="color" id="accentColorPicker" value="#ffff00" title="Color de acento">
+                    <input type="color" id="accentColorPicker" value="#0056b3" title="Color de acento">
                 </div>
-                <button type="button" class="toggle-anim-btn" id="animToggleBtn" onclick="toggleAnimation()" title="Activar/Desactivar Animaciones">
-                    🎬 Anim: ON
-                </button>
-                <button type="button" class="reset-bg-btn" onclick="resetTheme()" title="Restablecer predeterminados">↺</button>
+                <button type="button" class="toggle-anim-btn" id="animToggleBtn" onclick="toggleAnimation()">Animaciones</button>
+                <button type="button" class="reset-bg-btn" onclick="resetTheme()">↺ Restaurar</button>
             </div>
-            <h1>Control de Horas</h1>
-            <p>Sistema Automatizado control horas extras</p>
             <div class="schedules-badge">
-                <div class="badge">🧑 Michael Pintos: <span style="color:var(--palma-yellow);">Lun-Vie 05:00–13:00</span></div>
-                <div class="badge">📅 Sáb: <span style="color:var(--palma-yellow);">06:00–11:00</span></div>
-                <div class="badge">🧑 Nicolás Morel: <span style="color:var(--nico-color);">Lun-Vie 13:00–21:00</span></div>
-                <div class="badge">📅 Sáb: <span style="color:var(--nico-color);">11:00–16:00</span></div>
+                <div class="badge">🧑 Michael Pintos: <span style="color:#9d00ff;">Lun-Vie 05:00–13:00 / Sáb 06:00–11:00</span></div>
+                <div class="badge">🧑 Nicolás Morel: <span style="color:#ff007f;">Lun-Vie 13:00–21:00 / Sáb 11:00–16:00</span></div>
             </div>
         </header>
 
-        <!-- PARÁMETROS -->
         <div class="params-card">
             <h2>💰 Parámetros Salariales</h2>
             <div class="params-wrapper">
                 <div class="param-group">
-                    <label for="salario">Salario mensual bruto (PYG)</label>
+                    <label for="salario">Salario mensual (PYG)</label>
                     <input type="number" id="salario" placeholder="Ej: 3044000" step="1000">
                 </div>
                 <div class="param-group">
@@ -634,7 +283,6 @@
         </div>
 
         <div class="grid-layout">
-            <!-- FORMULARIO -->
             <div class="card">
                 <h2>📝 Registrar Jornada</h2>
                 <form id="shiftForm">
@@ -679,7 +327,6 @@
                 </div>
             </div>
 
-            <!-- RESULTADOS -->
             <div>
                 <div class="summary-cards" id="summaryCards">
                     <div class="stat-card">
@@ -709,7 +356,6 @@
                     </div>
                 </div>
 
-                <!-- TABLA -->
                 <div class="card">
                     <div class="filter-bar">
                         <h2>📋 Registros</h2>
@@ -717,7 +363,8 @@
                             <button class="filter-btn michael" data-filter="Michael Pintos" onclick="setFilter(this)">Michael</button>
                             <button class="filter-btn nico" data-filter="Nicolás Morel" onclick="setFilter(this)">Nicolás</button>
                             <button class="filter-btn todos active" data-filter="TODOS" onclick="setFilter(this)">Todos</button>
-                            <button class="btn-export" onclick="exportCSV()">📤 CSV</button>
+                            <button class="btn-export-excel" onclick="exportExcel()">📊 Excel</button>
+                            <button class="btn-export-pdf" onclick="exportPDF()">📄 PDF</button>
                             <button class="clear-btn" onclick="clearAllRecords()">🗑️ Limpiar</button>
                         </div>
                     </div>
@@ -735,38 +382,34 @@
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="recordsTable">
-                                <!-- Contenido dinámico -->
-                            </tbody>
+                            <tbody id="recordsTable"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- CHARTS -->
                 <div class="chart-wrapper">
                     <div class="chart-box">
                         <h3>📊 Distribución de Horas</h3>
                         <canvas id="pieChart"></canvas>
                         <div class="chart-legend-custom">
-                            <span class="legend-item"><span class="legend-color" style="background:var(--palma-yellow)"></span> Noc 30%</span>
-                            <span class="legend-item"><span class="legend-color" style="background:#50ffb1"></span> Extra 50%</span>
-                            <span class="legend-item"><span class="legend-color" style="background:#ff7be8"></span> Extra Noc 130%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:var(--excel-yellow-border)"></span> Noc 30%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:var(--excel-green-border)"></span> Extra 50%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:var(--excel-purple-border)"></span> Extra Noc 130%</span>
                         </div>
                     </div>
                     <div class="chart-box">
                         <h3>📊 Comparativa de Categorías</h3>
                         <canvas id="barChart"></canvas>
                         <div class="chart-legend-custom">
-                            <span class="legend-item"><span class="legend-color" style="background:var(--palma-yellow)"></span> Noc 30%</span>
-                            <span class="legend-item"><span class="legend-color" style="background:#50ffb1"></span> Extra 50%</span>
-                            <span class="legend-item"><span class="legend-color" style="background:#ff7be8"></span> Extra Noc 130%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:var(--excel-yellow-border)"></span> Noc 30%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:var(--excel-green-border)"></span> Extra 50%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:var(--excel-purple-border)"></span> Extra Noc 130%</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- REGLAS -->
         <div class="info-box-bottom">
             💡 <strong>Reglas de cálculo aplicadas:</strong><br>
             • Horas base: <strong>8h</strong> (Lunes a Viernes) / <strong>5h</strong> (Sábados).<br>
@@ -785,18 +428,19 @@
         </div>
     </div>
 
+    <!-- ============================================================== -->
+    <!-- =================== SCRIPT (Lógica mejorada) =================== -->
+    <!-- ============================================================== -->
     <script>
-        // CONFIGURACIÓN FIREBASE
         const FIREBASE_URL = 'https://control-hora-extra-default-rtdb.europe-west1.firebasedatabase.app/';
 
-        // ESTADO
         let records = [];
         let editingId = null;
         let pieChartInstance = null;
         let barChartInstance = null;
         let currentFilter = 'TODOS';
-        let salarioMensual = parseFloat(localStorage.getItem('salarioMensual')) || 0;
-        let valorHoraBase = parseFloat(localStorage.getItem('valorHoraBase')) || 0;
+        let salarioMensual = 0;
+        let valorHoraBase = 0;
 
         // TOAST
         function showNotification(message, type = 'success') {
@@ -804,11 +448,7 @@
             const toast = document.createElement('div');
             toast.className = 'toast';
             const icon = type === 'success' ? '✅' : '❌';
-            toast.innerHTML = `
-                <span class="toast-icon">${icon}</span>
-                <span>${message}</span>
-                <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
-            `;
+            toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${message}</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.add('show'));
             const timeout = setTimeout(() => {
@@ -830,16 +470,13 @@
                 const data = await response.json();
                 if (data) {
                     return Object.keys(data).map(key => ({ id: key, ...data[key] }));
-                } else {
-                    return [];
-                }
+                } else { return []; }
             } catch (error) {
                 console.error('Error fetchRecords:', error);
                 showNotification('❌ Error al cargar datos desde Firebase', 'error');
                 return null;
             }
         }
-
         async function saveRecordToFirebase(record) {
             try {
                 const { id, ...recordWithoutId } = record;
@@ -857,7 +494,6 @@
                 return null;
             }
         }
-
         async function updateRecordInFirebase(id, record) {
             try {
                 const { id: _, ...recordWithoutId } = record;
@@ -874,12 +510,9 @@
                 return false;
             }
         }
-
         async function deleteRecordFromFirebase(id) {
             try {
-                const response = await fetch(`${FIREBASE_URL}${id}.json`, {
-                    method: 'DELETE'
-                });
+                const response = await fetch(`${FIREBASE_URL}${id}.json`, { method: 'DELETE' });
                 if (!response.ok) throw new Error('Error al eliminar');
                 return true;
             } catch (error) {
@@ -888,7 +521,6 @@
                 return false;
             }
         }
-
         async function clearAllFromFirebase() {
             try {
                 const response = await fetch(`${FIREBASE_URL}.json`, {
@@ -904,17 +536,13 @@
                 return false;
             }
         }
-
         async function saveRecord(recordData, isEdit = false) {
             let success = false;
-
             if (isEdit && editingId) {
                 const ok = await updateRecordInFirebase(editingId, recordData);
                 if (ok) {
                     const index = records.findIndex(r => r.id === editingId);
-                    if (index !== -1) {
-                        records[index] = { ...recordData, id: editingId };
-                    }
+                    if (index !== -1) records[index] = { ...recordData, id: editingId };
                     success = true;
                 }
             } else {
@@ -925,7 +553,6 @@
                     success = true;
                 }
             }
-
             if (success) {
                 cancelEdit();
                 renderTable();
@@ -933,12 +560,9 @@
                 updateCharts();
                 showNotification(isEdit ? '✅ Registro actualizado con éxito' : '✅ Registro cargado con éxito', 'success');
                 return true;
-            } else {
-                return false;
-            }
+            } else return false;
         }
 
-        // FUNCIONES DE UI
         async function loadData() {
             const tbody = document.getElementById('recordsTable');
             tbody.innerHTML = `<tr class="loading-row"><td colspan="8">⏳ Cargando datos desde Firebase...</td></tr>`;
@@ -957,29 +581,23 @@
                 showNotification('⚠️ No se pudieron cargar los datos', 'error');
             }
         }
-
         async function deleteRecord(id) {
             if (!confirm('¿Eliminar este registro?')) return;
             const ok = await deleteRecordFromFirebase(id);
             if (ok) {
                 records = records.filter(r => r.id !== id);
                 if (editingId === id) cancelEdit();
-                renderTable();
-                updateTotals();
-                updateCharts();
+                renderTable(); updateTotals(); updateCharts();
                 showNotification('🗑️ Registro eliminado', 'success');
             }
         }
-
         async function clearAllRecords() {
             if (!confirm('¿Seguro que deseas eliminar TODOS los registros?')) return;
             const ok = await clearAllFromFirebase();
             if (ok) {
                 records = [];
                 if (editingId !== null) cancelEdit();
-                renderTable();
-                updateTotals();
-                updateCharts();
+                renderTable(); updateTotals(); updateCharts();
                 showNotification('🗑️ Todos los registros eliminados', 'success');
             }
         }
@@ -988,7 +606,6 @@
             document.getElementById('startTime').value = start;
             document.getElementById('endTime').value = end;
         }
-
         document.getElementById('date').valueAsDate = new Date();
         document.getElementById('worker').addEventListener('change', function(e) {
             if (e.target.value === 'Michael Pintos') setPreset('05:00', '13:00');
@@ -996,11 +613,12 @@
         });
         setPreset('05:00', '13:00');
 
-        if (salarioMensual > 0) document.getElementById('salario').value = salarioMensual;
-        if (valorHoraBase > 0) {
-            document.getElementById('valorHora').value = valorHoraBase;
-            document.getElementById('valorHoraDisplay').textContent = valorHoraBase.toLocaleString('es-PY') + ' PYG/h';
-        }
+        // Campos salariales vacíos al inicio
+        document.getElementById('salario').value = '';
+        document.getElementById('valorHora').value = '';
+        document.getElementById('valorHoraDisplay').textContent = '0 PYG/h';
+        salarioMensual = 0;
+        valorHoraBase = 0;
 
         document.getElementById('salario').addEventListener('input', function() {
             const salario = parseFloat(this.value) || 0;
@@ -1020,7 +638,6 @@
             }
             updateTotals();
         });
-
         document.getElementById('valorHora').addEventListener('input', function() {
             valorHoraBase = parseFloat(this.value) || 0;
             localStorage.setItem('valorHoraBase', valorHoraBase);
@@ -1032,9 +649,7 @@
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentFilter = btn.dataset.filter;
-            renderTable();
-            updateTotals();
-            updateCharts();
+            renderTable(); updateTotals(); updateCharts();
         }
 
         function calculateHours(worker, dateStr, startStr, endStr, hasBreak) {
@@ -1068,10 +683,7 @@
                 h30: (minutes30 / 60).toFixed(1),
                 h50: (minutes50 / 60).toFixed(1),
                 h130: (minutes130 / 60).toFixed(1),
-                isSaturday,
-                baseLimit: baseLimitMinutes / 60,
-                breakApplied: breakMinutes > 0,
-                hasNight: (minutes30 + minutes130) > 0
+                isSaturday, baseLimit: baseLimitMinutes / 60, breakApplied: breakMinutes > 0, hasNight: (minutes30 + minutes130) > 0
             };
         }
 
@@ -1084,26 +696,28 @@
             document.getElementById('startTime').value = record.startTime;
             document.getElementById('endTime').value = record.endTime;
             document.getElementById('break30').checked = record.hasBreak;
-            document.getElementById('editModeIndicator').innerHTML =
-                `✏️ Editando registro del <strong>${record.date}</strong> <button type="button" class="clear-btn" onclick="cancelEdit()" style="margin-left:8px; padding:2px 8px;">Cancelar</button>`;
+            document.getElementById('editModeIndicator').innerHTML = `✏️ Editando registro del <strong>${record.date}</strong> <button type="button" class="clear-btn" onclick="cancelEdit()" style="margin-left:8px; padding:2px 8px;">Cancelar</button>`;
             document.getElementById('submitBtn').textContent = '💾 Actualizar Registro';
         }
-
         function cancelEdit() {
             editingId = null;
             document.getElementById('editModeIndicator').innerHTML = '';
             document.getElementById('submitBtn').textContent = '⚡ Calcular y Registrar';
         }
 
+        // ==============================================================
+        // RENDERIZADO DE TABLA CON LA NUEVA LÓGICA DE COLORES
+        // ==============================================================
         function renderTable() {
             const tbody = document.getElementById('recordsTable');
             tbody.innerHTML = '';
             const filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
+            
+            // ORDEN INVERSO (Más antiguo primero)
+            filtered.sort((a, b) => a.date.localeCompare(b.date));
+
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="padding:24px;color:var(--text-muted);text-align:center;">
-                            <span style="font-size:1.2rem;display:block;margin-bottom:6px;">📭</span>
-                            No hay registros para mostrar
-                        </td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="padding:24px;color:var(--text-muted);text-align:center;"><span style="font-size:1.2rem;display:block;margin-bottom:6px;">📭</span>No hay registros para mostrar</td></tr>`;
                 return;
             }
             filtered.forEach(r => {
@@ -1117,23 +731,25 @@
                 tr.classList.add(r.worker === 'Michael Pintos' ? 'michael-row' : 'nico-row');
                 
                 let horarioDisplay = `${r.startTime} - ${r.endTime}`;
-                if (r.breakApplied) horarioDisplay += ' <small style="color:var(--text-muted);">(30m)</small>';
-                if (isNight) horarioDisplay += ' <span class="night-badge">🌙 Noc</span>';
+                if (r.breakApplied) horarioDisplay += ' (30m)';
+                if (isNight) horarioDisplay += ' Noc';
                 
-                // Clases dinámicas de resaltado
-                const class50 = h50 > 0 ? 'badge-rate extra-highlight-50' : 'badge-rate badge-50';
-                const class130 = h130 > 0 ? 'badge-rate extra-highlight-130' : 'badge-rate badge-130';
                 const dateCellClass = hasExtras ? 'day-extra-active' : '';
                 const dateDisplay = hasExtras ? `<strong>${r.date}</strong> <span class="day-badge-extra" title="Día con Horas Extras">⚡ Extra</span>` : r.date;
+
+                // Lógica de colores DARK (más oscuros) si el dato es > 0
+                const class30 = h30 > 0 ? 'cell-30-dark' : 'cell-30';
+                const class50 = h50 > 0 ? 'cell-50-dark' : 'cell-50';
+                const class130 = h130 > 0 ? 'cell-130-dark' : 'cell-130';
 
                 tr.innerHTML = `
                     <td class="${dateCellClass}">${dateDisplay}</td>
                     <td><strong>${r.worker}</strong></td>
                     <td>${horarioDisplay}</td>
                     <td><strong>${r.totalWorked} h</strong></td>
-                    <td><span class="badge-rate badge-30">${r.h30} h</span></td>
-                    <td><span class="${class50}">${r.h50} h</span></td>
-                    <td><span class="${class130}">${r.h130} h</span></td>
+                    <td class="${class30}">${r.h30} h</td>
+                    <td class="${class50}">${r.h50} h</td>
+                    <td class="${class130}">${r.h130} h</td>
                     <td>
                         <button class="btn-action" onclick="editRecord('${r.id}')" title="Editar">✏️</button>
                         <button class="btn-action" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button>
@@ -1172,8 +788,7 @@
             document.getElementById('totalPagar').innerText = formatCurrency(totalPagar);
 
             if (valorHora > 0 && (total30 + total50 + total130) > 0) {
-                document.getElementById('totalPagarDetalle').innerHTML =
-                    `30%: ${formatCurrency(monto30)} | 50%: ${formatCurrency(monto50)} | 130%: ${formatCurrency(monto130)}`;
+                document.getElementById('totalPagarDetalle').innerHTML = `30%: ${formatCurrency(monto30)} | 50%: ${formatCurrency(monto50)} | 130%: ${formatCurrency(monto130)}`;
             } else {
                 document.getElementById('totalPagarDetalle').innerHTML = '';
             }
@@ -1189,125 +804,121 @@
             });
             const labels = ['Nocturnidad 30%', 'Extra 50%', 'Extra Nocturna 130%'];
             const values = [sum30, sum50, sum130];
-            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--palma-yellow').trim() || '#ffff00';
-            const colors = [accentColor, '#50ffb1', '#ff7be8'];
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#0056b3';
+            const colors = [accentColor, '#5c9139', '#7d3c98'];
             const hasData = values.some(v => v > 0);
 
-            // Pie
             const pieCtx = document.getElementById('pieChart').getContext('2d');
             if (pieChartInstance) pieChartInstance.destroy();
             pieChartInstance = new Chart(pieCtx, {
                 type: 'doughnut',
-                data: {
-                    labels: hasData ? labels : ['Sin datos'],
-                    datasets: [{
-                        data: hasData ? values : [1],
-                        backgroundColor: hasData ? colors : ['#141518'],
-                        borderColor: 'transparent',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            enabled: hasData,
-                            callbacks: {
-                                label: (ctx) => {
-                                    const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                                    const pct = ((ctx.parsed / total) * 100).toFixed(1);
-                                    return `${ctx.label}: ${ctx.parsed.toFixed(1)}h (${pct}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
+                data: { labels: hasData ? labels : ['Sin datos'], datasets: [{ data: hasData ? values : [1], backgroundColor: hasData ? colors : ['#e5e7eb'], borderColor: 'transparent', borderWidth: 2 }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false }, tooltip: { enabled: hasData, callbacks: { label: (ctx) => { const total = ctx.dataset.data.reduce((a, b) => a + b, 0); const pct = ((ctx.parsed / total) * 100).toFixed(1); return `${ctx.label}: ${ctx.parsed.toFixed(1)}h (${pct}%)`; } } } } }
             });
 
-            // Bar
             const barCtx = document.getElementById('barChart').getContext('2d');
             if (barChartInstance) barChartInstance.destroy();
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Horas',
-                        data: values,
-                        backgroundColor: colors,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { color: '#ccc' }, grid: { color: 'rgba(255,255,255,0.08)' } },
-                        x: { ticks: { color: '#ccc' }, grid: { display: false } }
-                    }
-                }
+                data: { labels: labels, datasets: [{ label: 'Horas', data: values, backgroundColor: colors, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#6b7280' }, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { ticks: { color: '#6b7280' }, grid: { display: false } } } }
             });
         }
 
-        // EVENTO FORMULARIO
         document.getElementById('shiftForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             const worker = document.getElementById('worker').value;
             const date = document.getElementById('date').value;
             const startTime = document.getElementById('startTime').value;
             const endTime = document.getElementById('endTime').value;
             const hasBreak = document.getElementById('break30').checked;
-
-            if (!date || !startTime || !endTime) {
-                alert('Por favor, completa todos los campos.');
-                return;
-            }
-
+            if (!date || !startTime || !endTime) { alert('Por favor, completa todos los campos.'); return; }
             const result = calculateHours(worker, date, startTime, endTime, hasBreak);
-
-            const recordData = {
-                date,
-                worker,
-                startTime,
-                endTime,
-                hasBreak,
-                ...result
-            };
-
+            const recordData = { date, worker, startTime, endTime, hasBreak, ...result };
             const isEdit = (editingId !== null);
             try {
                 const ok = await saveRecord(recordData, isEdit);
-                if (!ok) {
-                    showNotification('❌ No se pudo guardar el registro. Revisa la conexión.', 'error');
-                }
-            } catch (error) {
-                console.error('Error en submit:', error);
-                showNotification('❌ Error inesperado al guardar', 'error');
-            }
+                if (!ok) showNotification('❌ No se pudo guardar el registro. Revisa la conexión.', 'error');
+            } catch (error) { console.error('Error en submit:', error); showNotification('❌ Error inesperado al guardar', 'error'); }
         });
 
-        // EXPORTAR CSV
-        function exportCSV() {
-            if (records.length === 0) {
-                alert('No existen registros para exportar.');
-                return;
-            }
-            let csv = 'Fecha,Empleado,Entrada,Salida,Total Horas,Nocturnidad 30%,Extra 50%,Extra Nocturna 130%\n';
-            records.forEach(r => {
-                csv += `${r.date},${r.worker},${r.startTime},${r.endTime},${r.totalWorked},${r.h30},${r.h50},${r.h130}\n`;
+        function exportPDF() { window.print(); }
+
+        // ==============================================================
+        // EXPORTACIÓN A EXCEL CON COLORES EXACTOS DE LA REFERENCIA
+        // ==============================================================
+        function exportExcel() {
+            const filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
+            filtered.sort((a, b) => a.date.localeCompare(b.date));
+
+            if (filtered.length === 0) { alert('No hay registros para exportar.'); return; }
+
+            let rowsHTML = '';
+            filtered.forEach(r => {
+                const h30 = parseFloat(r.h30) || 0;
+                const h50 = parseFloat(r.h50) || 0;
+                const h130 = parseFloat(r.h130) || 0;
+                const hasExtras = (h50 > 0 || h130 > 0);
+                const isNight = (h30 + h130) > 0;
+
+                let horarioDisplay = `${r.startTime} - ${r.endTime}`;
+                if (r.breakApplied) horarioDisplay += ' (30m)';
+                if (isNight) horarioDisplay += ' Noc';
+
+                let dateDisplay = r.date;
+                if (hasExtras) dateDisplay += ' (Extra)';
+
+                // Aplicar colores oscuros si > 0 en el Excel
+                const bg30 = h30 > 0 ? 'background-color: #fff5cf;' : 'background-color: #fffceb;';
+                const border30 = h30 > 0 ? 'border: 2px solid #c39200;' : 'border: 1px solid #e6ae00;';
+                const bg50 = h50 > 0 ? 'background-color: #e4f0db;' : 'background-color: #f3f9ef;';
+                const border50 = h50 > 0 ? 'border: 2px solid #4b7a2e;' : 'border: 1px solid #5c9139;';
+                const bg130 = h130 > 0 ? 'background-color: #f0ddf7;' : 'background-color: #f8f0fb;';
+                const border130 = h130 > 0 ? 'border: 2px solid #6a3185;' : 'border: 1px solid #7d3c98;';
+
+                rowsHTML += `
+                    <tr>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: ${hasExtras ? 'bold' : 'normal'};">${dateDisplay}</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${r.worker}</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center;">${horarioDisplay}</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${r.totalWorked} h</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg30} ${border30} color: #b38600; font-weight: 600;">${r.h30} h</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg50} ${border50} color: #3c6b20; font-weight: 600;">${r.h50} h</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg130} ${border130} color: #5c2a70; font-weight: 600;">${r.h130} h</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center;"></td>
+                    </tr>
+                `;
             });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+            const excelHTML = `
+                <html>
+                <head><meta charset="utf-8">
+                <style>
+                    table { border-collapse: collapse; width: 100%; font-family: 'Calibri', 'Arial', sans-serif; font-size: 12px; }
+                    .title-row td { border: none; padding-bottom: 10px; font-size: 16px; font-weight: bold; color: #0056b3; text-align: center; }
+                    th { border: 1px solid #d0d0d0; padding: 8px 12px; text-align: center; font-weight: bold; color: #1f2937; background-color: #f8fafc; }
+                    tr:nth-child(even) { background-color: #f9f9f9; }
+                </style>
+                </head>
+                <body>
+                    <table>
+                        <tr class="title-row"><td colspan="8">Control de Horas</td></tr>
+                        <thead><tr>
+                            <th>Fecha</th><th>Empleado</th><th>Horario</th><th>Efectivas</th>
+                            <th>Noc 30%</th><th>Extra 50%</th><th>Extra Noc 130%</th><th>Acciones</th>
+                        </tr></thead>
+                        <tbody>${rowsHTML}</tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([excelHTML], { type: 'application/vnd.ms-excel' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `control_horas_${new Date().toISOString().slice(0, 10)}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showNotification('📤 CSV exportado con éxito', 'success');
+            link.download = `control_horas_${new Date().toISOString().slice(0, 10)}.xls`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            showNotification('📊 Archivo Excel descargado con éxito', 'success');
         }
 
         // COLORES Y ANIMACIONES
@@ -1315,111 +926,54 @@
         const cardColorPicker = document.getElementById('cardColorPicker');
         const borderColorPicker = document.getElementById('borderColorPicker');
         const accentColorPicker = document.getElementById('accentColorPicker');
-
-        const defaultColors = { bg: '#1d1e22', card: '#2a2b30', border: '#4a4b52', accent: '#ffff00' };
+        const defaultColors = { bg: '#f0f2f5', card: '#ffffff', border: '#d1d5db', accent: '#0056b3' };
         let colorTimeout = null;
-
         function scheduleThemeUpdate() {
             if (colorTimeout) cancelAnimationFrame(colorTimeout);
             colorTimeout = requestAnimationFrame(() => {
-                applyFullTheme(
-                    bgColorPicker.value,
-                    cardColorPicker.value,
-                    borderColorPicker.value,
-                    accentColorPicker.value
-                );
+                applyFullTheme(bgColorPicker.value, cardColorPicker.value, borderColorPicker.value, accentColorPicker.value);
                 colorTimeout = null;
             });
         }
-
         function loadSavedColors() {
             const bg = localStorage.getItem('userBgColor') || defaultColors.bg;
             const card = localStorage.getItem('userCardColor') || defaultColors.card;
             const border = localStorage.getItem('userBorderColor') || defaultColors.border;
             const accent = localStorage.getItem('userAccentColor') || defaultColors.accent;
-            bgColorPicker.value = bg;
-            cardColorPicker.value = card;
-            borderColorPicker.value = border;
-            accentColorPicker.value = accent;
+            bgColorPicker.value = bg; cardColorPicker.value = card; borderColorPicker.value = border; accentColorPicker.value = accent;
             applyFullTheme(bg, card, border, accent);
         }
-
         function applyFullTheme(bg, card, border, accent) {
-            localStorage.setItem('userBgColor', bg);
-            localStorage.setItem('userCardColor', card);
-            localStorage.setItem('userBorderColor', border);
-            localStorage.setItem('userAccentColor', accent);
-            document.documentElement.style.setProperty('--bg-primary', bg);
-            document.documentElement.style.setProperty('--bg-card', card);
-            document.documentElement.style.setProperty('--bg-input', adjustBrightness(card, -10));
-            document.documentElement.style.setProperty('--border-color', border);
-            document.documentElement.style.setProperty('--palma-yellow', accent);
-            document.documentElement.style.setProperty('--palma-yellow-bright', adjustBrightness(accent, 20));
-            const topColor = adjustBrightness(bg, 30);
-            document.body.style.background = `radial-gradient(circle at top center, ${topColor} 0%, ${bg} 70%)`;
-            document.querySelectorAll('.stat-card-highlight').forEach(el => {
-                el.style.borderColor = accent;
-                el.style.boxShadow = `0 12px 28px rgba(${hexToRgb(accent)}, 0.2), 0 4px 0px #a3a300`;
+            localStorage.setItem('userBgColor', bg); localStorage.setItem('userCardColor', card); localStorage.setItem('userBorderColor', border); localStorage.setItem('userAccentColor', accent);
+            document.documentElement.style.setProperty('--bg-page', bg); document.documentElement.style.setProperty('--bg-card', card); document.documentElement.style.setProperty('--bg-input', adjustBrightness(card, -5)); document.documentElement.style.setProperty('--border-color', border); document.documentElement.style.setProperty('--primary-color', accent);
+            document.body.style.backgroundColor = bg;
+            document.querySelectorAll('.btn').forEach(el => {
+                el.style.backgroundColor = accent; el.style.boxShadow = `0 2px 4px rgba(${hexToRgb(accent)}, 0.3)`;
+                el.addEventListener('mouseenter', () => { el.style.backgroundColor = adjustBrightness(accent, -10); });
+                el.addEventListener('mouseleave', () => { el.style.backgroundColor = accent; });
             });
         }
-
         function adjustBrightness(hex, percent) {
-            let num = parseInt(hex.replace('#', ''), 16);
-            let amt = Math.round(2.55 * percent);
+            let num = parseInt(hex.replace('#', ''), 16); let amt = Math.round(2.55 * percent);
             let R = (num >> 16) + amt, G = (num >> 8 & 0x00FF) + amt, B = (num & 0x0000FF) + amt;
-            R = Math.min(255, Math.max(0, R));
-            G = Math.min(255, Math.max(0, G));
-            B = Math.min(255, Math.max(0, B));
+            R = Math.min(255, Math.max(0, R)); G = Math.min(255, Math.max(0, G)); B = Math.min(255, Math.max(0, B));
             return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
         }
-
-        function hexToRgb(hex) {
-            return `${parseInt(hex.slice(1,3), 16)}, ${parseInt(hex.slice(3,5), 16)}, ${parseInt(hex.slice(5,7), 16)}`;
-        }
-
-        bgColorPicker.addEventListener('input', scheduleThemeUpdate);
-        cardColorPicker.addEventListener('input', scheduleThemeUpdate);
-        borderColorPicker.addEventListener('input', scheduleThemeUpdate);
-        accentColorPicker.addEventListener('input', scheduleThemeUpdate);
-
+        function hexToRgb(hex) { return `${parseInt(hex.slice(1,3), 16)}, ${parseInt(hex.slice(3,5), 16)}, ${parseInt(hex.slice(5,7), 16)}`; }
+        bgColorPicker.addEventListener('input', scheduleThemeUpdate); cardColorPicker.addEventListener('input', scheduleThemeUpdate); borderColorPicker.addEventListener('input', scheduleThemeUpdate); accentColorPicker.addEventListener('input', scheduleThemeUpdate);
         let isAnimationEnabled = localStorage.getItem('userAnimState') !== 'disabled';
-
         function updateAnimUI() {
             const btn = document.getElementById('animToggleBtn');
-            if (isAnimationEnabled) {
-                document.body.classList.remove('no-anim');
-                btn.innerHTML = '🎬 Anim: ON';
-                btn.style.color = 'var(--palma-yellow)';
-                localStorage.setItem('userAnimState', 'enabled');
-            } else {
-                document.body.classList.add('no-anim');
-                btn.innerHTML = '⏸️ Anim: OFF';
-                btn.style.color = '#ff7be8';
-                localStorage.setItem('userAnimState', 'disabled');
-            }
+            if (isAnimationEnabled) { document.body.classList.remove('no-anim'); btn.innerHTML = '🎬 Anim: ON'; btn.style.color = 'var(--primary-color)'; localStorage.setItem('userAnimState', 'enabled'); } 
+            else { document.body.classList.add('no-anim'); btn.innerHTML = '⏸️ Anim: OFF'; btn.style.color = '#6b7280'; localStorage.setItem('userAnimState', 'disabled'); }
         }
-
-        function toggleAnimation() {
-            isAnimationEnabled = !isAnimationEnabled;
-            updateAnimUI();
-        }
-
+        function toggleAnimation() { isAnimationEnabled = !isAnimationEnabled; updateAnimUI(); }
         function resetTheme() {
-            bgColorPicker.value = defaultColors.bg;
-            cardColorPicker.value = defaultColors.card;
-            borderColorPicker.value = defaultColors.border;
-            accentColorPicker.value = defaultColors.accent;
-            applyFullTheme(defaultColors.bg, defaultColors.card, defaultColors.border, defaultColors.accent);
-            isAnimationEnabled = true;
-            updateAnimUI();
+            bgColorPicker.value = defaultColors.bg; cardColorPicker.value = defaultColors.card; borderColorPicker.value = defaultColors.border; accentColorPicker.value = defaultColors.accent;
+            applyFullTheme(defaultColors.bg, defaultColors.card, defaultColors.border, defaultColors.accent); isAnimationEnabled = true; updateAnimUI();
         }
-
-        loadSavedColors();
-        updateAnimUI();
-
-        // INICIALIZACIÓN
-        loadData();
-        cancelEdit();
+        loadSavedColors(); updateAnimUI();
+        loadData(); cancelEdit();
     </script>
 </body>
 </html>
