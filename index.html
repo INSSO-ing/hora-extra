@@ -165,6 +165,8 @@
         .btn-export-excel:hover { background-color: #145a34; transform: scale(1.02); }
         .btn-export-pdf { background-color: #b91c1c; color: white; padding: 4px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; border: none; cursor: pointer; transition: all 0.2s ease; }
         .btn-export-pdf:hover { background-color: #991b1b; transform: scale(1.02); }
+        .btn-close-month { background-color: #7c3aed; color: white; padding: 4px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; border: none; cursor: pointer; transition: all 0.2s ease; }
+        .btn-close-month:hover { background-color: #6d28d9; transform: scale(1.02); }
         .clear-btn { background-color: #fee2e2; color: var(--danger); border: 1px solid #fca5a5; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; transition: all 0.2s ease; }
         .clear-btn:hover { background-color: var(--danger); color: white; border-color: var(--danger); }
 
@@ -365,6 +367,8 @@
                             <button class="filter-btn todos active" data-filter="TODOS" onclick="setFilter(this)">Todos</button>
                             <button class="btn-export-excel" onclick="exportExcel()">📊 Excel</button>
                             <button class="btn-export-pdf" onclick="exportPDF()">📄 PDF</button>
+                            <!-- NUEVO BOTÓN CERRAR MES -->
+                            <button class="btn-close-month" onclick="closeMonth()">📦 Cerrar mes</button>
                             <button class="clear-btn" onclick="clearAllRecords()">🗑️ Limpiar</button>
                         </div>
                     </div>
@@ -375,7 +379,7 @@
                                     <th>Fecha</th>
                                     <th>Empleado</th>
                                     <th>Horario</th>
-                                    <th>Turno</th> <!-- CAMBIADO: Antes decía "Efectivas" -->
+                                    <th>Turno</th>
                                     <th>Noc 30%</th>
                                     <th>Extra 50%</th>
                                     <th>Extra Noc 130%</th>
@@ -601,6 +605,122 @@
                 showNotification('🗑️ Todos los registros eliminados', 'success');
             }
         }
+
+        // ==============================================================
+        // NUEVA FUNCIÓN: CERRAR MES (Respaldo + Borrado)
+        // ==============================================================
+        async function closeMonth() {
+            if (records.length === 0) {
+                showNotification('ℹ️ No hay registros para respaldar.', 'error');
+                return;
+            }
+            // 1. Exportar respaldo en Excel
+            const confirmExport = confirm('Se descargará un respaldo en Excel de todos los registros actuales. ¿Continuar?');
+            if (!confirmExport) return;
+
+            // Usamos la función exportExcel pero forzamos un nombre de archivo con el mes actual
+            exportExcelWithName(`backup_${new Date().toISOString().slice(0,7)}.xls`);
+
+            // 2. Preguntar si borrar los registros
+            const confirmDelete = confirm('✅ Respaldo descargado. ¿Deseas eliminar todos los registros de la base de datos para empezar el nuevo mes?');
+            if (confirmDelete) {
+                const ok = await clearAllFromFirebase();
+                if (ok) {
+                    records = [];
+                    if (editingId !== null) cancelEdit();
+                    renderTable(); updateTotals(); updateCharts();
+                    showNotification('📦 Mes cerrado. Base de datos limpia para nuevos registros.', 'success');
+                } else {
+                    showNotification('❌ Error al limpiar la base de datos. Intenta nuevamente.', 'error');
+                }
+            } else {
+                showNotification('ℹ️ No se eliminaron los registros. Puedes hacerlo manualmente con el botón "Limpiar".', 'info');
+            }
+        }
+
+        // Función auxiliar para exportar Excel con nombre personalizado
+        function exportExcelWithName(filename) {
+            // Reutiliza la lógica de exportExcel pero con nombre diferente
+            const filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
+            filtered.sort((a, b) => a.date.localeCompare(b.date));
+
+            if (filtered.length === 0) {
+                showNotification('No hay registros para exportar.', 'error');
+                return;
+            }
+
+            let rowsHTML = '';
+            filtered.forEach(r => {
+                const h30 = parseFloat(r.h30) || 0;
+                const h50 = parseFloat(r.h50) || 0;
+                const h130 = parseFloat(r.h130) || 0;
+                const hasExtras = (h50 > 0 || h130 > 0);
+                const isNight = (h30 + h130) > 0;
+
+                let horarioDisplay = `${r.startTime} - ${r.endTime}`;
+                if (r.breakApplied) horarioDisplay += ' (30m)';
+                if (isNight) horarioDisplay += ' Noc';
+
+                let dateDisplay = r.date;
+                if (hasExtras) dateDisplay += ' (Extra)';
+
+                const bg30 = h30 > 0 ? 'background-color: #fff5cf;' : 'background-color: #fffceb;';
+                const border30 = h30 > 0 ? 'border: 2px solid #c39200;' : 'border: 1px solid #e6ae00;';
+                const bg50 = h50 > 0 ? 'background-color: #e4f0db;' : 'background-color: #f3f9ef;';
+                const border50 = h50 > 0 ? 'border: 2px solid #4b7a2e;' : 'border: 1px solid #5c9139;';
+                const bg130 = h130 > 0 ? 'background-color: #f0ddf7;' : 'background-color: #f8f0fb;';
+                const border130 = h130 > 0 ? 'border: 2px solid #6a3185;' : 'border: 1px solid #7d3c98;';
+
+                const turnoDisplay = r.breakApplied ? '12.0 h' : `${r.totalWorked} h`;
+
+                rowsHTML += `
+                    <tr>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: ${hasExtras ? 'bold' : 'normal'};">${dateDisplay}</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${r.worker}</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center;">${horarioDisplay}</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${turnoDisplay}</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg30} ${border30} color: #b38600; font-weight: 600;">${r.h30} h</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg50} ${border50} color: #3c6b20; font-weight: 600;">${r.h50} h</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg130} ${border130} color: #5c2a70; font-weight: 600;">${r.h130} h</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center;"></td>
+                    </tr>
+                `;
+            });
+
+            const excelHTML = `
+                <html>
+                <head><meta charset="utf-8">
+                <style>
+                    table { border-collapse: collapse; width: 100%; font-family: 'Calibri', 'Arial', sans-serif; font-size: 12px; }
+                    .title-row td { border: none; padding-bottom: 10px; font-size: 16px; font-weight: bold; color: #0056b3; text-align: center; }
+                    th { border: 1px solid #d0d0d0; padding: 8px 12px; text-align: center; font-weight: bold; color: #1f2937; background-color: #f8fafc; }
+                    tr:nth-child(even) { background-color: #f9f9f9; }
+                </style>
+                </head>
+                <body>
+                    <table>
+                        <tr class="title-row"><td colspan="8">Control de Horas - Respaldo</td></tr>
+                        <thead><tr>
+                            <th>Fecha</th><th>Empleado</th><th>Horario</th><th>Turno</th>
+                            <th>Noc 30%</th><th>Extra 50%</th><th>Extra Noc 130%</th><th>Acciones</th>
+                        </tr></thead>
+                        <tbody>${rowsHTML}</tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([excelHTML], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            showNotification('📊 Respaldo descargado correctamente', 'success');
+        }
+
+        // ==============================================================
+        // FIN NUEVA FUNCIÓN
+        // ==============================================================
 
         function setPreset(start, end) {
             document.getElementById('startTime').value = start;
@@ -871,7 +991,6 @@
                 let dateDisplay = r.date;
                 if (hasExtras) dateDisplay += ' (Extra)';
 
-                // Aplicar colores oscuros si > 0 en el Excel
                 const bg30 = h30 > 0 ? 'background-color: #fff5cf;' : 'background-color: #fffceb;';
                 const border30 = h30 > 0 ? 'border: 2px solid #c39200;' : 'border: 1px solid #e6ae00;';
                 const bg50 = h50 > 0 ? 'background-color: #e4f0db;' : 'background-color: #f3f9ef;';
@@ -879,7 +998,6 @@
                 const bg130 = h130 > 0 ? 'background-color: #f0ddf7;' : 'background-color: #f8f0fb;';
                 const border130 = h130 > 0 ? 'border: 2px solid #6a3185;' : 'border: 1px solid #7d3c98;';
 
-                // Visualización del Turno en Excel
                 const turnoDisplay = r.breakApplied ? '12.0 h' : `${r.totalWorked} h`;
 
                 rowsHTML += `
