@@ -186,7 +186,6 @@
         table { width: 100%; border-collapse: collapse; font-family: 'Calibri', 'Arial', 'Segoe UI', sans-serif; font-size: 12px; color: #1f2937; table-layout: auto; }
         thead tr { background-color: #f8fafc; }
 
-        /* ENCABEZADOS: permitir que se partan en 2 líneas para que no ensanchen las columnas */
         th {
             color: #1f2937 !important;
             font-weight: 700 !important;
@@ -202,7 +201,6 @@
             vertical-align: middle;
         }
 
-        /* CELDAS DE DATOS: no se parten en varias líneas */
         td {
             padding: 5px 6px !important;
             border: 1px solid #d0d0d0 !important;
@@ -216,7 +214,6 @@
         tbody tr:nth-child(even) td { background-color: #ffffff; }
         tbody tr:hover td { background-color: #e6e6e6 !important; }
 
-        /* En modo dos columnas: comprime un poco más para que quepa sin scroll */
         .tables-grid.two-cols th {
             padding: 4px 3px !important;
             font-size: 9.5px !important;
@@ -259,6 +256,20 @@
             letter-spacing: 0.3px;
             vertical-align: middle;
             white-space: nowrap;
+        }
+
+        /* 🖱️ Fecha con hover informativo */
+        .date-hover {
+            cursor: help;
+            display: inline-block;
+            border-bottom: 1px dotted #9aa0a6;
+            padding-bottom: 1px;
+            transition: color 0.15s ease, border-color 0.15s ease;
+        }
+        .date-hover:hover {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            border-bottom-style: solid;
         }
 
         /* Fila de TOTALES */
@@ -326,13 +337,76 @@
         .legend-item { display: flex; align-items: center; gap: 5px; }
         .legend-color { width: 10px; height: 10px; border-radius: 50%; }
 
-        .info-box-bottom { background: var(--bg-card); border-left: 4px solid var(--primary-color); border-radius: 8px; padding: 14px 18px; margin-top: 22px; font-size: 0.85rem; color: var(--text-muted); border: 1px solid var(--border-color); box-shadow: var(--shadow-card); line-height: 1.6; }
-        .info-box-bottom strong { color: var(--text-main); }
-        .info-box-bottom .highlight { color: #5c2a70; font-weight: 700; }
-        .info-box-bottom .highlight-blue { color: var(--excel-blue-text); font-weight: 700; }
         .footer-notes { margin-top: 18px; font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .footer-notes span { background: var(--bg-card); padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border-color); }
         .loading-row td { padding: 30px; color: var(--text-muted); font-style: italic; }
+
+        /* 💵 Tooltip flotante de pago por día */
+        #dayTooltip {
+            position: fixed;
+            top: 0; left: 0;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+            font-size: 0.78rem;
+            color: var(--text-main);
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+            min-width: 250px;
+            max-width: 330px;
+            line-height: 1.4;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        #dayTooltip.show { opacity: 1; transform: translateY(0); }
+        #dayTooltip .tt-title {
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        #dayTooltip .tt-total {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            line-height: 1.15;
+        }
+        #dayTooltip .tt-total small {
+            display: block;
+            font-size: 0.66rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 2px;
+        }
+        #dayTooltip .tt-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 3px;
+            font-size: 0.75rem;
+        }
+        #dayTooltip .tt-line span:first-child { color: var(--text-muted); }
+        #dayTooltip .tt-line span:last-child { font-weight: 700; white-space: nowrap; }
+        #dayTooltip .tt-sub {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border-color);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        #dayTooltip .tt-sub strong { color: var(--text-main); }
 
         @media print {
             body * { visibility: hidden; }
@@ -347,6 +421,7 @@
             .cell-30, .cell-30-dark, .cell-50, .cell-50-dark, .cell-130, .cell-130-dark, .cell-100, .cell-100-dark, tr.totals-row td, .badge-extra-mini {
                 -webkit-print-color-adjust: exact; print-color-adjust: exact;
             }
+            #dayTooltip { display: none !important; }
         }
     </style>
 </head>
@@ -561,16 +636,6 @@
             </div>
         </div>
 
-        <div class="info-box-bottom">
-            💡 <strong>Reglas de cálculo aplicadas:</strong><br>
-            • Horas base: <strong>8h</strong> (Lunes a Viernes) / <strong>5h</strong> (Sábados).<br>
-            • <span class="highlight">Nocturnidad 30%</span> → Tramo de <strong>20:00 a 01:00</strong> dentro de las horas base (Paga 130% del valor hora).<br>
-            • <span class="highlight">Extra Nocturna 130%</span> → Tramo de <strong>01:00 a 06:00</strong> fuera de horas base (Paga 230% del valor hora).<br>
-            • <span class="highlight">Extra 50%</span> → Excedente de base en horario diurno (06:00–20:00) (Paga 150% del valor hora).<br>
-            • <span class="highlight-blue">Extra 100% (Domingo)</span> → Todas las horas trabajadas el <strong>domingo</strong> se pagan al <strong>200%</strong> del valor hora (pago doble).<br>
-            • Descuento de descanso: 30 min automáticos si la jornada bruta supera las 8 horas.
-        </div>
-
         <div class="footer-notes">
             <span>🟣 Michael: Lun-Vie 05-13h / Sáb 06-11h</span>
             <span>Nicolás: Lun-Vie 13-21h / Sáb 11-16h</span>
@@ -580,6 +645,9 @@
             <span>☀️ Domingo: pago doble (100%)</span>
         </div>
     </div>
+
+    <!-- 💵 Tooltip flotante de pago por día -->
+    <div id="dayTooltip"></div>
 
     <script>
         const FIREBASE_URL = 'https://control-hora-extra-default-rtdb.europe-west1.firebasedatabase.app/';
@@ -1011,12 +1079,18 @@
                 localStorage.setItem('valorHoraBase', 0);
             }
             updateTotals();
+            if (dayTooltip.classList.contains('show') && hoveredRecordId) {
+                renderTooltipContent(hoveredRecordId);
+            }
         });
         document.getElementById('valorHora').addEventListener('input', function() {
             valorHoraBase = parseFloat(this.value) || 0;
             localStorage.setItem('valorHoraBase', valorHoraBase);
             document.getElementById('valorHoraDisplay').textContent = (valorHoraBase > 0 ? valorHoraBase.toLocaleString('es-PY') : '0') + ' PYG/h';
             updateTotals();
+            if (dayTooltip.classList.contains('show') && hoveredRecordId) {
+                renderTooltipContent(hoveredRecordId);
+            }
         });
 
         function setFilter(btn) {
@@ -1072,6 +1146,103 @@
                 breakApplied: breakMinutes > 0,
                 hasNight: (minutes30 + minutes130) > 0
             };
+        }
+
+        // ==============================================================
+        // 🖱️ TOOLTIP DE PAGO POR DÍA (al pasar el cursor sobre la fecha)
+        // ==============================================================
+        const dayTooltip = document.getElementById('dayTooltip');
+        let hoveredRecordId = null;
+
+        function formatPYG(val) {
+            if (!val || val <= 0) return '0 PYG';
+            return Math.round(val).toLocaleString('es-PY', { style: 'currency', currency: 'PYG', minimumFractionDigits: 0 });
+        }
+
+        function renderTooltipContent(recordId) {
+            const r = records.find(x => x.id === recordId);
+            if (!r) { dayTooltip.innerHTML = ''; return; }
+
+            const valor = parseFloat(document.getElementById('valorHora').value) || 0;
+
+            const hBase = safeNum(r.base);
+            const h30   = safeNum(r.h30);
+            const h50   = safeNum(r.h50);
+            const h130  = safeNum(r.h130);
+            const h100  = safeNum(r.h100);
+
+            const pagoBase = hBase * valor;
+            const pago30   = h30  * valor * 1.3;
+            const pago50   = h50  * valor * 1.5;
+            const pago130  = h130 * valor * 2.3;
+            const pago100  = h100 * valor * 2.0;
+
+            const totalExtras = pago30 + pago50 + pago130 + pago100;
+            const totalDia    = pagoBase + totalExtras;
+
+            if (valor <= 0) {
+                dayTooltip.innerHTML = `
+                    <div class="tt-title">💵 Pago del día · ${r.date}</div>
+                    <div class="tt-sub">⚠️ Ingresa el <strong>salario mensual</strong> o el <strong>valor hora</strong> para ver el monto del día.</div>
+                `;
+                return;
+            }
+
+            const line = (label, horas, monto, color) => {
+                if (monto <= 0) return '';
+                return `<div class="tt-line"><span>${label} · ${horas.toFixed(1)} h</span><span style="color:${color}">${formatPYG(monto)}</span></div>`;
+            };
+
+            const linesHTML = [
+                line('Base', hBase, pagoBase, 'var(--text-main)'),
+                line('Noc 30%', h30, pago30, 'var(--excel-yellow-text)'),
+                line('Extra 50%', h50, pago50, 'var(--excel-green-text)'),
+                line('Extra Noc 130%', h130, pago130, 'var(--excel-purple-text)'),
+                line('Extra 100% Dom', h100, pago100, 'var(--excel-blue-text)')
+            ].join('') || '<div class="tt-line"><span>Sin horas computables</span><span>0 PYG</span></div>';
+
+            let sub = `${r.totalWorked || '0.0'} h trabajadas`;
+            if (r.breakApplied) sub += ' · 30 min descontados';
+            if (r.isSunday) sub += ' · ☀️ Domingo (200%)';
+            if (r.isSaturday) sub += ' · 📅 Sábado (base 5 h)';
+
+            dayTooltip.innerHTML = `
+                <div class="tt-title">💵 Pago del día · ${r.date}</div>
+                <div class="tt-total"><small>Extras a liquidar</small>${formatPYG(totalExtras)}</div>
+                ${linesHTML}
+                <div class="tt-sub">${sub}<br>Total del día (con base): <strong>${formatPYG(totalDia)}</strong></div>
+            `;
+        }
+
+        function positionTooltip(e) {
+            const pad = 14;
+            const rect = dayTooltip.getBoundingClientRect();
+            let x = e.clientX + pad;
+            let y = e.clientY + pad;
+
+            if (x + rect.width > window.innerWidth - 8) x = e.clientX - rect.width - pad;
+            if (y + rect.height > window.innerHeight - 8) y = e.clientY - rect.height - pad;
+            if (x < 8) x = 8;
+            if (y < 8) y = 8;
+
+            dayTooltip.style.left = x + 'px';
+            dayTooltip.style.top = y + 'px';
+        }
+
+        function attachDateHover(el, recordId) {
+            el.addEventListener('mouseenter', (e) => {
+                hoveredRecordId = recordId;
+                renderTooltipContent(recordId);
+                dayTooltip.classList.add('show');
+                positionTooltip(e);
+            });
+            el.addEventListener('mousemove', (e) => {
+                if (dayTooltip.classList.contains('show')) positionTooltip(e);
+            });
+            el.addEventListener('mouseleave', () => {
+                hoveredRecordId = null;
+                dayTooltip.classList.remove('show');
+            });
         }
 
         function editRecord(id) {
@@ -1133,8 +1304,8 @@
                 const turnoDisplay = r.breakApplied ? '12.0 h' : `${r.totalWorked ?? '0.0'} h`;
 
                 const dateCell = hasExtras 
-                    ? `${r.date}<span class="badge-extra-mini">Extra</span>` 
-                    : r.date;
+                    ? `<span class="date-hover" data-id="${r.id}">${r.date}<span class="badge-extra-mini">Extra</span></span>` 
+                    : `<span class="date-hover" data-id="${r.id}">${r.date}</span>`;
 
                 tr.innerHTML = `
                     <td>${dateCell}</td>
@@ -1164,6 +1335,11 @@
                 <td></td>
             `;
             tbody.appendChild(totalsTr);
+
+            // Enganchar tooltips a cada fecha
+            tbody.querySelectorAll('.date-hover').forEach(el => {
+                attachDateHover(el, el.dataset.id);
+            });
         }
 
         function renderTable() {
@@ -1335,6 +1511,14 @@
         }
         loadSavedColors(); updateAnimUI();
         loadData(); cancelEdit();
+
+        // Ocultar tooltip si se hace scroll o resize para evitar desincronización
+        window.addEventListener('scroll', () => {
+            if (dayTooltip.classList.contains('show')) dayTooltip.classList.remove('show');
+        }, true);
+        window.addEventListener('resize', () => {
+            if (dayTooltip.classList.contains('show')) dayTooltip.classList.remove('show');
+        });
     </script>
 </body>
 </html>
