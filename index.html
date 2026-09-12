@@ -10,41 +10,43 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <style>
-        /* ==============================================================
-               COLORES ESTÁNDAR DE EXCEL (Guardados en el sistema)
-               ============================================================== */
         :root {
-            --primary-color: #0056b3;      /* Azul corporativo */
-            --bg-page: #f0f2f5;            /* Fondo gris claro */
-            --bg-card: #ffffff;            /* Fondo blanco para tarjetas */
-            --bg-input: #f9fafb;           /* Fondo de inputs */
-            --border-color: #d1d5db;       /* Bordes sutiles */
-            --text-main: #1f2937;          /* Texto oscuro principal */
-            --text-muted: #6b7280;         /* Texto secundario */
+            --primary-color: #0056b3;
+            --bg-page: #f0f2f5;
+            --bg-card: #ffffff;
+            --bg-input: #f9fafb;
+            --border-color: #d1d5db;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
             --shadow-card: 0 2px 8px rgba(0,0,0,0.06);
             --shadow-btn: 0 2px 4px rgba(0,86,179,0.3);
             --danger: #dc2626;
             --michael-color: #9d00ff;
             --nico-color: #ff007f;
 
-            /* Colores base de la tabla (Referencia Excel) */
             --excel-yellow-bg: #fffceb;
             --excel-yellow-border: #e6ae00;
             --excel-yellow-text: #b38600;
-            --excel-yellow-dark-bg: #fff5cf; /* Un poco más oscuro */
+            --excel-yellow-dark-bg: #fff5cf;
             --excel-yellow-dark-border: #c39200;
             
             --excel-green-bg: #f3f9ef;
             --excel-green-border: #5c9139;
             --excel-green-text: #3c6b20;
-            --excel-green-dark-bg: #e4f0db; /* Un poco más oscuro */
+            --excel-green-dark-bg: #e4f0db;
             --excel-green-dark-border: #4b7a2e;
             
             --excel-purple-bg: #f8f0fb;
             --excel-purple-border: #7d3c98;
             --excel-purple-text: #5c2a70;
-            --excel-purple-dark-bg: #f0ddf7; /* Un poco más oscuro */
+            --excel-purple-dark-bg: #f0ddf7;
             --excel-purple-dark-border: #6a3185;
+
+            --excel-blue-bg: #eff6ff;
+            --excel-blue-border: #2563eb;
+            --excel-blue-text: #1e40af;
+            --excel-blue-dark-bg: #dbeafe;
+            --excel-blue-dark-border: #1d4ed8;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
         body {
@@ -56,7 +58,6 @@
         }
         .container { max-width: 1400px; margin: 0 auto; }
 
-        /* Toast */
         #toast-container {
             position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; pointer-events: none;
         }
@@ -68,7 +69,6 @@
         .toast .toast-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; margin-left: auto; padding: 0 4px; transition: color 0.2s; }
         .toast .toast-close:hover { color: var(--primary-color); }
 
-        /* Header */
         header {
             background: var(--bg-card);
             border-radius: 12px;
@@ -82,22 +82,9 @@
             justify-content: space-between;
             gap: 16px;
         }
-        .header-title-group {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        header h1 {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--primary-color);
-            letter-spacing: -0.5px;
-        }
-        header p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
+        .header-title-group { display: flex; flex-direction: column; gap: 2px; }
+        header h1 { font-size: 1.6rem; font-weight: 800; color: var(--primary-color); letter-spacing: -0.5px; }
+        header p { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
         .header-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .color-picker-group { display: flex; align-items: center; gap: 6px; background: var(--bg-input); padding: 4px 8px; border-radius: 40px; border: 1px solid var(--border-color); }
         .color-picker-group label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); cursor: pointer; }
@@ -111,7 +98,6 @@
         .badge { background: var(--bg-input); padding: 4px 12px; border-radius: 16px; font-size: 0.75rem; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 4px; color: var(--text-main); }
         .badge span { font-weight: 700; }
 
-        /* Tarjetas y Formularios */
         .params-card { background: var(--bg-card); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-card); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
         .params-card h2 { font-size: 1rem; color: var(--primary-color); display: flex; align-items: center; gap: 6px; margin: 0; font-weight: 700; }
         .params-wrapper { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
@@ -138,7 +124,6 @@
         .btn { width: 100%; padding: 12px; background: var(--primary-color); color: white; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; box-shadow: var(--shadow-btn); }
         .btn:hover { background: #004494; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,86,179,0.3); }
 
-        /* Tarjetas de Resumen */
         .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 22px; }
         .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 10px; text-align: center; box-shadow: var(--shadow-card); }
         .stat-card .title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.3px; }
@@ -147,12 +132,12 @@
         .val-30 { color: var(--excel-yellow-text); }
         .val-50 { color: var(--excel-green-text); }
         .val-130 { color: var(--excel-purple-text); }
+        .val-100 { color: var(--excel-blue-text); }
         .stat-card-highlight { border-color: var(--primary-color) !important; background: #f8fafc !important; }
         .stat-card-highlight .title { color: var(--primary-color) !important; }
         .monto-total { font-size: 1.8rem; color: var(--primary-color); font-weight: 800; margin-top: 2px; }
         .monto-detalle { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
 
-        /* Filtros y botones */
         .filter-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
         .filter-bar h2 { font-size: 1rem; margin: 0; white-space: nowrap; color: var(--primary-color); }
         .filter-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -170,9 +155,6 @@
         .clear-btn { background-color: #fee2e2; color: var(--danger); border: 1px solid #fca5a5; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; transition: all 0.2s ease; }
         .clear-btn:hover { background-color: var(--danger); color: white; border-color: var(--danger); }
 
-        /* ==============================================================
-               TABLA ESTILO EXCEL (CON RESALTADO MÁS OSCURO SI > 0)
-               ============================================================== */
         .table-container { overflow-x: auto; background-color: #ffffff; border: 1px solid #d0d0d0; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
         table { width: 100%; border-collapse: collapse; font-family: 'Calibri', 'Arial', 'Segoe UI', sans-serif; font-size: 13px; color: #1f2937; }
         thead tr { background-color: #f8fafc; }
@@ -184,22 +166,78 @@
         tr.michael-row td { border-left: 3px solid var(--michael-color); }
         tr.nico-row td { border-left: 3px solid var(--nico-color); }
 
-        /* Celdas de Horas: BASE (Valor = 0) */
-        .cell-30 { background-color: var(--excel-yellow-bg) !important; border: 1px solid var(--excel-yellow-border) !important; color: var(--excel-yellow-text) !important; font-weight: 600 !important; }
-        .cell-50 { background-color: var(--excel-green-bg) !important; border: 1px solid var(--excel-green-border) !important; color: var(--excel-green-text) !important; font-weight: 600 !important; }
-        .cell-130 { background-color: var(--excel-purple-bg) !important; border: 1px solid var(--excel-purple-border) !important; color: var(--excel-purple-text) !important; font-weight: 600 !important; }
-        
-        /* Celdas de Horas: RESALTADO MÁS OSCURO (Valor > 0) */
-        .cell-30-dark { background-color: var(--excel-yellow-dark-bg) !important; border: 2px solid var(--excel-yellow-dark-border) !important; color: var(--excel-yellow-text) !important; font-weight: 700 !important; }
-        .cell-50-dark { background-color: var(--excel-green-dark-bg) !important; border: 2px solid var(--excel-green-dark-border) !important; color: var(--excel-green-text) !important; font-weight: 700 !important; }
-        .cell-130-dark { background-color: var(--excel-purple-dark-bg) !important; border: 2px solid var(--excel-purple-dark-border) !important; color: var(--excel-purple-text) !important; font-weight: 700 !important; }
+        /* Badge "Extra" discreto al lado de la fecha */
+        .badge-extra-mini {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            background-color: #f1f3f5;
+            border: 1px solid #d5d8dc;
+            color: #7a828a;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            vertical-align: middle;
+        }
 
-        .day-extra-active { font-weight: 700 !important; }
-        .day-badge-extra { border: 1px solid #d1d5db; color: #374151; background-color: #f3f4f6; padding: 1px 5px; border-radius: 12px; font-size: 10px; display: inline-block; margin-left: 4px; font-weight: 600; }
+        /* Fila de TOTALES */
+        tr.totals-row td {
+            background-color: #eceff1 !important;
+            font-weight: 800 !important;
+            color: #263238 !important;
+            border-top: 2px solid #455a64 !important;
+            border-bottom: 2px solid #455a64 !important;
+            padding: 8px 10px !important;
+            font-size: 13px !important;
+        }
+        tr.totals-row td.totals-label {
+            text-align: right !important;
+            letter-spacing: 0.5px;
+        }
+        tr.totals-row:hover td {
+            background-color: #eceff1 !important;
+        }
+
+        .cell-30 { background-color: #fdfbf3 !important; border: 1px solid #e8e8e8 !important; color: #b0b0b0 !important; font-weight: 500 !important; }
+        .cell-50 { background-color: #f8fbf6 !important; border: 1px solid #e8e8e8 !important; color: #b0b0b0 !important; font-weight: 500 !important; }
+        .cell-130 { background-color: #faf7fc !important; border: 1px solid #e8e8e8 !important; color: #b0b0b0 !important; font-weight: 500 !important; }
+        .cell-100 { background-color: #f7faff !important; border: 1px solid #e8e8e8 !important; color: #b0b0b0 !important; font-weight: 500 !important; }
+        
+        .cell-30-dark { background-color: #fdf1c8 !important; border: 1px solid #d4a017 !important; color: #7a5a00 !important; font-weight: 700 !important; }
+        .cell-50-dark { background-color: #dcefd0 !important; border: 1px solid #6a9b3e !important; color: #2f5410 !important; font-weight: 700 !important; }
+        .cell-130-dark { background-color: #ecd7f5 !important; border: 1px solid #8e44ad !important; color: #4d1a66 !important; font-weight: 700 !important; }
+        .cell-100-dark { background-color: #cfe3fa !important; border: 1px solid #2c7be5 !important; color: #0d3b7a !important; font-weight: 700 !important; }
+
+        tr.totals-row td.tot-30 { background-color: #fdf1c8 !important; color: #7a5a00 !important; border: 2px solid #d4a017 !important; }
+        tr.totals-row td.tot-50 { background-color: #dcefd0 !important; color: #2f5410 !important; border: 2px solid #6a9b3e !important; }
+        tr.totals-row td.tot-130 { background-color: #ecd7f5 !important; color: #4d1a66 !important; border: 2px solid #8e44ad !important; }
+        tr.totals-row td.tot-100 { background-color: #cfe3fa !important; color: #0d3b7a !important; border: 2px solid #2c7be5 !important; }
+
         .btn-action { background: none; border: none; cursor: pointer; color: #6b7280; font-size: 14px !important; padding: 2px 6px; transition: color 0.2s ease; }
         .btn-action:hover { color: var(--primary-color); }
 
-        /* Gráficos */
+        .sunday-badge {
+            display: none;
+            margin-top: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #dbeafe;
+            border: 1px solid #2563eb;
+            color: #1e40af;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-align: center;
+        }
+        .sunday-badge.active { display: block; }
+        input[type="date"].is-sunday {
+            background: #dbeafe !important;
+            border-color: #2563eb !important;
+            color: #1e40af !important;
+            font-weight: 700;
+        }
+
         .chart-wrapper { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 768px) { .chart-wrapper { grid-template-columns: 1fr; } }
         .chart-box { background: var(--bg-card); border-radius: 10px; padding: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-card); display: flex; flex-direction: column; align-items: center; }
@@ -212,11 +250,11 @@
         .info-box-bottom { background: var(--bg-card); border-left: 4px solid var(--primary-color); border-radius: 8px; padding: 14px 18px; margin-top: 22px; font-size: 0.85rem; color: var(--text-muted); border: 1px solid var(--border-color); box-shadow: var(--shadow-card); line-height: 1.6; }
         .info-box-bottom strong { color: var(--text-main); }
         .info-box-bottom .highlight { color: #5c2a70; font-weight: 700; }
+        .info-box-bottom .highlight-blue { color: var(--excel-blue-text); font-weight: 700; }
         .footer-notes { margin-top: 18px; font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .footer-notes span { background: var(--bg-card); padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border-color); }
         .loading-row td { padding: 30px; color: var(--text-muted); font-style: italic; }
 
-        /* Estilos para impresión/PDF */
         @media print {
             body * { visibility: hidden; }
             .table-container, .table-container * { visibility: visible; }
@@ -228,7 +266,7 @@
             .table-container table th { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .table-container table td { background-color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .table-container tbody tr:nth-child(odd) td { background-color: #f9f9f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .cell-30, .cell-30-dark, .cell-50, .cell-50-dark, .cell-130, .cell-130-dark, .day-badge-extra {
+            .cell-30, .cell-30-dark, .cell-50, .cell-50-dark, .cell-130, .cell-130-dark, .cell-100, .cell-100-dark, tr.totals-row td, .badge-extra-mini {
                 -webkit-print-color-adjust: exact; print-color-adjust: exact;
             }
         }
@@ -266,6 +304,7 @@
             <div class="schedules-badge">
                 <div class="badge">🧑 Michael Pintos: <span style="color:#9d00ff;">Lun-Vie 05:00–13:00 / Sáb 06:00–11:00</span></div>
                 <div class="badge">🧑 Nicolás Morel: <span style="color:#ff007f;">Lun-Vie 13:00–21:00 / Sáb 11:00–16:00</span></div>
+                <div class="badge">☀️ Domingo: <span style="color:#1e40af;">Pago doble (100%)</span></div>
             </div>
         </header>
 
@@ -307,6 +346,7 @@
                     <div class="form-group">
                         <label for="date">Fecha de inicio</label>
                         <input type="date" id="date" required>
+                        <div class="sunday-badge" id="sundayBadge">☀️ Domingo detectado — Pago doble (100%)</div>
                     </div>
                     <div class="form-group">
                         <label for="startTime">Hora entrada</label>
@@ -347,6 +387,11 @@
                         <div class="monto" id="monto130">0 PYG</div>
                     </div>
                     <div class="stat-card">
+                        <div class="title">☀️ Extra 100% Dom</div>
+                        <div class="value val-100" id="total100">0.0h</div>
+                        <div class="monto" id="monto100">0 PYG</div>
+                    </div>
+                    <div class="stat-card">
                         <div class="title">🌙 Total Nocturnas</div>
                         <div class="value val-night-total" id="totalNight">0.0h</div>
                         <div class="monto" id="montoNight">0 PYG</div>
@@ -367,7 +412,6 @@
                             <button class="filter-btn todos active" data-filter="TODOS" onclick="setFilter(this)">Todos</button>
                             <button class="btn-export-excel" onclick="exportExcel()">📊 Excel</button>
                             <button class="btn-export-pdf" onclick="exportPDF()">📄 PDF</button>
-                            <!-- NUEVO BOTÓN CERRAR MES -->
                             <button class="btn-close-month" onclick="closeMonth()">📦 Cerrar mes</button>
                             <button class="clear-btn" onclick="clearAllRecords()">🗑️ Limpiar</button>
                         </div>
@@ -383,6 +427,7 @@
                                     <th>Noc 30%</th>
                                     <th>Extra 50%</th>
                                     <th>Extra Noc 130%</th>
+                                    <th>Extra 100% Dom</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -399,6 +444,7 @@
                             <span class="legend-item"><span class="legend-color" style="background:var(--excel-yellow-border)"></span> Noc 30%</span>
                             <span class="legend-item"><span class="legend-color" style="background:var(--excel-green-border)"></span> Extra 50%</span>
                             <span class="legend-item"><span class="legend-color" style="background:var(--excel-purple-border)"></span> Extra Noc 130%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:var(--excel-blue-border)"></span> Extra 100% Dom</span>
                         </div>
                     </div>
                     <div class="chart-box">
@@ -408,6 +454,7 @@
                             <span class="legend-item"><span class="legend-color" style="background:var(--excel-yellow-border)"></span> Noc 30%</span>
                             <span class="legend-item"><span class="legend-color" style="background:var(--excel-green-border)"></span> Extra 50%</span>
                             <span class="legend-item"><span class="legend-color" style="background:var(--excel-purple-border)"></span> Extra Noc 130%</span>
+                            <span class="legend-item"><span class="legend-color" style="background:var(--excel-blue-border)"></span> Extra 100% Dom</span>
                         </div>
                     </div>
                 </div>
@@ -420,6 +467,7 @@
             • <span class="highlight">Nocturnidad 30%</span> → Tramo de <strong>20:00 a 01:00</strong> dentro de las horas base (Paga 130% del valor hora).<br>
             • <span class="highlight">Extra Nocturna 130%</span> → Tramo de <strong>01:00 a 06:00</strong> fuera de horas base (Paga 230% del valor hora).<br>
             • <span class="highlight">Extra 50%</span> → Excedente de base en horario diurno (06:00–20:00) (Paga 150% del valor hora).<br>
+            • <span class="highlight-blue">Extra 100% (Domingo)</span> → Todas las horas trabajadas el <strong>domingo</strong> se pagan al <strong>200%</strong> del valor hora (pago doble).<br>
             • Descuento de descanso: 30 min automáticos si la jornada bruta supera las 8 horas.
         </div>
 
@@ -429,12 +477,10 @@
             <span>🌙 30%: 20:00–01:00 (base)</span>
             <span>🌙 130%: 01:00–06:00 (excedente)</span>
             <span>📅 Sábado: base max 5h</span>
+            <span>☀️ Domingo: pago doble (100%)</span>
         </div>
     </div>
 
-    <!-- ============================================================== -->
-    <!-- =================== SCRIPT (Lógica mejorada) =================== -->
-    <!-- ============================================================== -->
     <script>
         const FIREBASE_URL = 'https://control-hora-extra-default-rtdb.europe-west1.firebasedatabase.app/';
 
@@ -446,12 +492,16 @@
         let salarioMensual = 0;
         let valorHoraBase = 0;
 
-        // TOAST
+        function safeNum(v) {
+            const n = parseFloat(v);
+            return isNaN(n) ? 0 : n;
+        }
+
         function showNotification(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
-            const icon = type === 'success' ? '✅' : '❌';
+            const icon = type === 'success' ? '✅' : (type === 'info' ? 'ℹ️' : '❌');
             toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${message}</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.add('show'));
@@ -466,7 +516,6 @@
             });
         }
 
-        // CRUD FIREBASE
         async function fetchRecordsFromFirebase() {
             try {
                 const response = await fetch(`${FIREBASE_URL}.json`);
@@ -569,7 +618,7 @@
 
         async function loadData() {
             const tbody = document.getElementById('recordsTable');
-            tbody.innerHTML = `<tr class="loading-row"><td colspan="8">⏳ Cargando datos desde Firebase...</td></tr>`;
+            tbody.innerHTML = `<tr class="loading-row"><td colspan="9">⏳ Cargando datos desde Firebase...</td></tr>`;
             const data = await fetchRecordsFromFirebase();
             if (data !== null) {
                 records = data;
@@ -606,22 +655,16 @@
             }
         }
 
-        // ==============================================================
-        // NUEVA FUNCIÓN: CERRAR MES (Respaldo + Borrado)
-        // ==============================================================
         async function closeMonth() {
             if (records.length === 0) {
                 showNotification('ℹ️ No hay registros para respaldar.', 'error');
                 return;
             }
-            // 1. Exportar respaldo en Excel
             const confirmExport = confirm('Se descargará un respaldo en Excel de todos los registros actuales. ¿Continuar?');
             if (!confirmExport) return;
 
-            // Usamos la función exportExcel pero forzamos un nombre de archivo con el mes actual
             exportExcelWithName(`backup_${new Date().toISOString().slice(0,7)}.xls`);
 
-            // 2. Preguntar si borrar los registros
             const confirmDelete = confirm('✅ Respaldo descargado. ¿Deseas eliminar todos los registros de la base de datos para empezar el nuevo mes?');
             if (confirmDelete) {
                 const ok = await clearAllFromFirebase();
@@ -638,102 +681,176 @@
             }
         }
 
-        // Función auxiliar para exportar Excel con nombre personalizado
-        function exportExcelWithName(filename) {
-            // Reutiliza la lógica de exportExcel pero con nombre diferente
-            const filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
-            filtered.sort((a, b) => a.date.localeCompare(b.date));
-
-            if (filtered.length === 0) {
-                showNotification('No hay registros para exportar.', 'error');
-                return;
-            }
-
+        // ==============================================================
+        // CONSTRUCCIÓN DE FILAS HTML PARA EXCEL
+        // ==============================================================
+        function buildExcelRowsHTML(filtered) {
             let rowsHTML = '';
+            let sum30 = 0, sum50 = 0, sum130 = 0, sum100 = 0;
+
             filtered.forEach(r => {
-                const h30 = parseFloat(r.h30) || 0;
-                const h50 = parseFloat(r.h50) || 0;
-                const h130 = parseFloat(r.h130) || 0;
-                const hasExtras = (h50 > 0 || h130 > 0);
+                const h30 = safeNum(r.h30);
+                const h50 = safeNum(r.h50);
+                const h130 = safeNum(r.h130);
+                const h100 = safeNum(r.h100);
+
+                sum30 += h30;
+                sum50 += h50;
+                sum130 += h130;
+                sum100 += h100;
+
                 const isNight = (h30 + h130) > 0;
+                const hasExtras = (h50 > 0 || h130 > 0 || h100 > 0);
 
                 let horarioDisplay = `${r.startTime} - ${r.endTime}`;
                 if (r.breakApplied) horarioDisplay += ' (30m)';
                 if (isNight) horarioDisplay += ' Noc';
+                if (r.isSunday) horarioDisplay += ' Dom';
 
-                let dateDisplay = r.date;
-                if (hasExtras) dateDisplay += ' (Extra)';
+                // Fecha con sufijo "(Extra)" pequeño y gris si hay horas extras
+                const dateDisplay = hasExtras 
+                    ? `${r.date} <span style="color: #9aa0a6; font-size: 10px; font-style: italic;">(Extra)</span>` 
+                    : r.date;
 
-                const bg30 = h30 > 0 ? 'background-color: #fff5cf;' : 'background-color: #fffceb;';
-                const border30 = h30 > 0 ? 'border: 2px solid #c39200;' : 'border: 1px solid #e6ae00;';
-                const bg50 = h50 > 0 ? 'background-color: #e4f0db;' : 'background-color: #f3f9ef;';
-                const border50 = h50 > 0 ? 'border: 2px solid #4b7a2e;' : 'border: 1px solid #5c9139;';
-                const bg130 = h130 > 0 ? 'background-color: #f0ddf7;' : 'background-color: #f8f0fb;';
-                const border130 = h130 > 0 ? 'border: 2px solid #6a3185;' : 'border: 1px solid #7d3c98;';
+                const style30 = h30 > 0 
+                    ? 'background-color: #fdf1c8; color: #7a5a00; border: 1px solid #d4a017; font-weight: bold;' 
+                    : 'background-color: #fdfbf3; color: #b0b0b0; border: 1px solid #e8e8e8;';
+                const style50 = h50 > 0 
+                    ? 'background-color: #dcefd0; color: #2f5410; border: 1px solid #6a9b3e; font-weight: bold;' 
+                    : 'background-color: #f8fbf6; color: #b0b0b0; border: 1px solid #e8e8e8;';
+                const style130 = h130 > 0 
+                    ? 'background-color: #ecd7f5; color: #4d1a66; border: 1px solid #8e44ad; font-weight: bold;' 
+                    : 'background-color: #faf7fc; color: #b0b0b0; border: 1px solid #e8e8e8;';
+                const style100 = h100 > 0 
+                    ? 'background-color: #cfe3fa; color: #0d3b7a; border: 1px solid #2c7be5; font-weight: bold;' 
+                    : 'background-color: #f7faff; color: #b0b0b0; border: 1px solid #e8e8e8;';
 
-                const turnoDisplay = r.breakApplied ? '12.0 h' : `${r.totalWorked} h`;
+                const turnoDisplay = r.breakApplied ? '12.0 h' : `${r.totalWorked ?? '0.0'} h`;
 
                 rowsHTML += `
                     <tr>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: ${hasExtras ? 'bold' : 'normal'};">${dateDisplay}</td>
+                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center;">${dateDisplay}</td>
                         <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${r.worker}</td>
                         <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center;">${horarioDisplay}</td>
                         <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${turnoDisplay}</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg30} ${border30} color: #b38600; font-weight: 600;">${r.h30} h</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg50} ${border50} color: #3c6b20; font-weight: 600;">${r.h50} h</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg130} ${border130} color: #5c2a70; font-weight: 600;">${r.h130} h</td>
+                        <td style="padding: 6px 10px; text-align: center; ${style30}">${h30.toFixed(1)} h</td>
+                        <td style="padding: 6px 10px; text-align: center; ${style50}">${h50.toFixed(1)} h</td>
+                        <td style="padding: 6px 10px; text-align: center; ${style130}">${h130.toFixed(1)} h</td>
+                        <td style="padding: 6px 10px; text-align: center; ${style100}">${h100.toFixed(1)} h</td>
                         <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center;"></td>
                     </tr>
                 `;
             });
 
-            const excelHTML = `
+            // Fila de TOTALES al final
+            rowsHTML += `
+                <tr style="font-weight: bold; background-color: #eceff1;">
+                    <td colspan="4" style="border: 1px solid #90a4ae; padding: 8px 10px; text-align: right; font-weight: 900; font-size: 13px; background-color: #eceff1; color: #263238;">TOTALES:</td>
+                    <td style="border: 2px solid #d4a017; padding: 8px 10px; text-align: center; background-color: #fdf1c8; color: #7a5a00; font-weight: 900;">${sum30.toFixed(1)} h</td>
+                    <td style="border: 2px solid #6a9b3e; padding: 8px 10px; text-align: center; background-color: #dcefd0; color: #2f5410; font-weight: 900;">${sum50.toFixed(1)} h</td>
+                    <td style="border: 2px solid #8e44ad; padding: 8px 10px; text-align: center; background-color: #ecd7f5; color: #4d1a66; font-weight: 900;">${sum130.toFixed(1)} h</td>
+                    <td style="border: 2px solid #2c7be5; padding: 8px 10px; text-align: center; background-color: #cfe3fa; color: #0d3b7a; font-weight: 900;">${sum100.toFixed(1)} h</td>
+                    <td style="border: 1px solid #90a4ae; padding: 8px 10px; background-color: #eceff1;"></td>
+                </tr>
+            `;
+            return rowsHTML;
+        }
+
+        function buildExcelFileHTML(rowsHTML, title) {
+            return `
                 <html>
                 <head><meta charset="utf-8">
                 <style>
-                    table { border-collapse: collapse; width: 100%; font-family: 'Calibri', 'Arial', sans-serif; font-size: 12px; }
-                    .title-row td { border: none; padding-bottom: 10px; font-size: 16px; font-weight: bold; color: #0056b3; text-align: center; }
-                    th { border: 1px solid #d0d0d0; padding: 8px 12px; text-align: center; font-weight: bold; color: #1f2937; background-color: #f8fafc; }
-                    tr:nth-child(even) { background-color: #f9f9f9; }
+                    table { border-collapse: collapse; width: 100%; font-family: 'Calibri', 'Arial', sans-serif; font-size: 13px; }
+                    .title-row td { border: none; padding-bottom: 10px; font-size: 18px; font-weight: bold; color: #0056b3; text-align: center; }
+                    th { border: 1px solid #90a4ae; padding: 10px 12px; text-align: center; font-weight: bold; color: #ffffff; background-color: #1976d2; }
+                    td { border: 1px solid #cfd8dc; padding: 8px 10px; text-align: center; }
                 </style>
                 </head>
                 <body>
                     <table>
-                        <tr class="title-row"><td colspan="8">Control de Horas - Respaldo</td></tr>
+                        <tr class="title-row"><td colspan="9">${title}</td></tr>
                         <thead><tr>
                             <th>Fecha</th><th>Empleado</th><th>Horario</th><th>Turno</th>
-                            <th>Noc 30%</th><th>Extra 50%</th><th>Extra Noc 130%</th><th>Acciones</th>
+                            <th>Noc 30%</th><th>Extra 50%</th><th>Extra Noc 130%</th><th>Extra 100% Dom</th><th>Acciones</th>
                         </tr></thead>
                         <tbody>${rowsHTML}</tbody>
                     </table>
                 </body>
                 </html>
             `;
+        }
 
+        function downloadExcelFile(filtered, filename, title) {
+            if (filtered.length === 0) {
+                showNotification('No hay registros para exportar.', 'error');
+                return false;
+            }
+            const rowsHTML = buildExcelRowsHTML(filtered);
+            const excelHTML = buildExcelFileHTML(rowsHTML, title);
             const blob = new Blob([excelHTML], { type: 'application/vnd.ms-excel' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = filename;
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            showNotification('📊 Respaldo descargado correctamente', 'success');
+            return true;
         }
 
-        // ==============================================================
-        // FIN NUEVA FUNCIÓN
-        // ==============================================================
+        function getFilteredSortedRecords() {
+            const filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
+            filtered.sort((a, b) => a.date.localeCompare(b.date));
+            return filtered;
+        }
+
+        function exportExcelWithName(filename) {
+            const filtered = getFilteredSortedRecords();
+            const ok = downloadExcelFile(filtered, filename, 'Control de Horas - Respaldo');
+            if (ok) showNotification('📊 Respaldo descargado correctamente', 'success');
+        }
 
         function setPreset(start, end) {
             document.getElementById('startTime').value = start;
             document.getElementById('endTime').value = end;
         }
+
+        function checkSundayInForm() {
+            const dateInput = document.getElementById('date');
+            const sundayBadge = document.getElementById('sundayBadge');
+            const dateVal = dateInput.value;
+            if (!dateVal) {
+                dateInput.classList.remove('is-sunday');
+                sundayBadge.classList.remove('active');
+                return false;
+            }
+            const [y, m, d] = dateVal.split('-').map(Number);
+            const fecha = new Date(y, m - 1, d);
+            const isSunday = fecha.getDay() === 0;
+            if (isSunday) {
+                dateInput.classList.add('is-sunday');
+                sundayBadge.classList.add('active');
+                return true;
+            } else {
+                dateInput.classList.remove('is-sunday');
+                sundayBadge.classList.remove('active');
+                return false;
+            }
+        }
+
+        document.getElementById('date').addEventListener('change', function() {
+            const isSunday = checkSundayInForm();
+            if (isSunday) {
+                showNotification('☀️ Fecha domingo detectada: pago doble (100%)', 'info');
+            }
+        });
+
         document.getElementById('date').valueAsDate = new Date();
         document.getElementById('worker').addEventListener('change', function(e) {
             if (e.target.value === 'Michael Pintos') setPreset('05:00', '13:00');
             else setPreset('13:00', '21:00');
         });
         setPreset('05:00', '13:00');
+        checkSundayInForm();
 
-        // Campos salariales vacíos al inicio
         document.getElementById('salario').value = '';
         document.getElementById('valorHora').value = '';
         document.getElementById('valorHoraDisplay').textContent = '0 PYG/h';
@@ -779,16 +896,24 @@
             let endMin = eH * 60 + eM;
             if (endMin <= startMin) endMin += 1440;
             let totalBruto = endMin - startMin;
-            const fecha = new Date(dateStr + 'T00:00:00');
-            const isSaturday = fecha.getDay() === 6;
+            const [y, mo, d] = dateStr.split('-').map(Number);
+            const fecha = new Date(y, mo - 1, d);
+            const dayOfWeek = fecha.getDay();
+            const isSunday = (dayOfWeek === 0);
+            const isSaturday = (dayOfWeek === 6);
             const baseLimitMinutes = isSaturday ? 300 : 480;
             let breakMinutes = (hasBreak && totalBruto > 480) ? 30 : 0;
             const effectiveMin = totalBruto - breakMinutes;
-            let baseMinutes = 0, minutes30 = 0, minutes50 = 0, minutes130 = 0, workedBaseMin = 0;
+            let baseMinutes = 0, minutes30 = 0, minutes50 = 0, minutes130 = 0, minutes100 = 0, workedBaseMin = 0;
+
             for (let m = startMin; m < startMin + effectiveMin; m++) {
                 const hourOfDay = (Math.floor(m / 60)) % 24;
                 const isNight = (hourOfDay >= 20 || hourOfDay < 6);
-                if (workedBaseMin < baseLimitMinutes) {
+
+                if (isSunday) {
+                    minutes100++;
+                    workedBaseMin++;
+                } else if (workedBaseMin < baseLimitMinutes) {
                     if (isNight) minutes30++;
                     else baseMinutes++;
                     workedBaseMin++;
@@ -803,7 +928,12 @@
                 h30: (minutes30 / 60).toFixed(1),
                 h50: (minutes50 / 60).toFixed(1),
                 h130: (minutes130 / 60).toFixed(1),
-                isSaturday, baseLimit: baseLimitMinutes / 60, breakApplied: breakMinutes > 0, hasNight: (minutes30 + minutes130) > 0
+                h100: (minutes100 / 60).toFixed(1),
+                isSaturday,
+                isSunday,
+                baseLimit: baseLimitMinutes / 60,
+                breakApplied: breakMinutes > 0,
+                hasNight: (minutes30 + minutes130) > 0
             };
         }
 
@@ -818,6 +948,7 @@
             document.getElementById('break30').checked = record.hasBreak;
             document.getElementById('editModeIndicator').innerHTML = `✏️ Editando registro del <strong>${record.date}</strong> <button type="button" class="clear-btn" onclick="cancelEdit()" style="margin-left:8px; padding:2px 8px;">Cancelar</button>`;
             document.getElementById('submitBtn').textContent = '💾 Actualizar Registro';
+            checkSundayInForm();
         }
         function cancelEdit() {
             editingId = null;
@@ -826,26 +957,33 @@
         }
 
         // ==============================================================
-        // RENDERIZADO DE TABLA CON LA NUEVA LÓGICA DE COLORES Y TURNO
+        // RENDERIZADO DE TABLA (con badge "Extra" discreto)
         // ==============================================================
         function renderTable() {
             const tbody = document.getElementById('recordsTable');
             tbody.innerHTML = '';
-            const filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
-            
-            // ORDEN INVERSO (Más antiguo primero)
-            filtered.sort((a, b) => a.date.localeCompare(b.date));
+            const filtered = getFilteredSortedRecords();
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="padding:24px;color:var(--text-muted);text-align:center;"><span style="font-size:1.2rem;display:block;margin-bottom:6px;">📭</span>No hay registros para mostrar</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="padding:24px;color:var(--text-muted);text-align:center;"><span style="font-size:1.2rem;display:block;margin-bottom:6px;">📭</span>No hay registros para mostrar</td></tr>`;
                 return;
             }
+
+            let sum30 = 0, sum50 = 0, sum130 = 0, sum100 = 0;
+
             filtered.forEach(r => {
-                const h30 = parseFloat(r.h30) || 0;
-                const h50 = parseFloat(r.h50) || 0;
-                const h130 = parseFloat(r.h130) || 0;
+                const h30 = safeNum(r.h30);
+                const h50 = safeNum(r.h50);
+                const h130 = safeNum(r.h130);
+                const h100 = safeNum(r.h100);
+
+                sum30 += h30;
+                sum50 += h50;
+                sum130 += h130;
+                sum100 += h100;
+
                 const isNight = (h30 + h130) > 0;
-                const hasExtras = (h50 > 0 || h130 > 0);
+                const hasExtras = (h50 > 0 || h130 > 0 || h100 > 0);
 
                 const tr = document.createElement('tr');
                 tr.classList.add(r.worker === 'Michael Pintos' ? 'michael-row' : 'nico-row');
@@ -853,26 +991,29 @@
                 let horarioDisplay = `${r.startTime} - ${r.endTime}`;
                 if (r.breakApplied) horarioDisplay += ' (30m)';
                 if (isNight) horarioDisplay += ' Noc';
-                
-                const dateCellClass = hasExtras ? 'day-extra-active' : '';
-                const dateDisplay = hasExtras ? `<strong>${r.date}</strong> <span class="day-badge-extra" title="Día con Horas Extras">⚡ Extra</span>` : r.date;
+                if (r.isSunday) horarioDisplay += ' Dom';
 
-                // Lógica de colores DARK (más oscuros) si el dato es > 0
                 const class30 = h30 > 0 ? 'cell-30-dark' : 'cell-30';
                 const class50 = h50 > 0 ? 'cell-50-dark' : 'cell-50';
                 const class130 = h130 > 0 ? 'cell-130-dark' : 'cell-130';
+                const class100 = h100 > 0 ? 'cell-100-dark' : 'cell-100';
 
-                // CAMBIO VISUAL DEL TURNO: Si tiene (30m), mostramos 12.0 h en pantalla (los cálculos internos siguen con 11.5)
-                const turnoDisplay = r.breakApplied ? '12.0 h' : `${r.totalWorked} h`;
+                const turnoDisplay = r.breakApplied ? '12.0 h' : `${r.totalWorked ?? '0.0'} h`;
+
+                // Badge "Extra" discreto al lado de la fecha
+                const dateCell = hasExtras 
+                    ? `${r.date}<span class="badge-extra-mini">Extra</span>` 
+                    : r.date;
 
                 tr.innerHTML = `
-                    <td class="${dateCellClass}">${dateDisplay}</td>
+                    <td>${dateCell}</td>
                     <td><strong>${r.worker}</strong></td>
                     <td>${horarioDisplay}</td>
                     <td><strong>${turnoDisplay}</strong></td>
-                    <td class="${class30}">${r.h30} h</td>
-                    <td class="${class50}">${r.h50} h</td>
-                    <td class="${class130}">${r.h130} h</td>
+                    <td class="${class30}">${h30.toFixed(1)} h</td>
+                    <td class="${class50}">${h50.toFixed(1)} h</td>
+                    <td class="${class130}">${h130.toFixed(1)} h</td>
+                    <td class="${class100}">${h100.toFixed(1)} h</td>
                     <td>
                         <button class="btn-action" onclick="editRecord('${r.id}')" title="Editar">✏️</button>
                         <button class="btn-action" onclick="deleteRecord('${r.id}')" title="Eliminar">🗑️</button>
@@ -880,38 +1021,55 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Fila de TOTALES al final de la tabla HTML
+            const totalsTr = document.createElement('tr');
+            totalsTr.className = 'totals-row';
+            totalsTr.innerHTML = `
+                <td class="totals-label" colspan="4">TOTALES:</td>
+                <td class="tot-30">${sum30.toFixed(1)} h</td>
+                <td class="tot-50">${sum50.toFixed(1)} h</td>
+                <td class="tot-130">${sum130.toFixed(1)} h</td>
+                <td class="tot-100">${sum100.toFixed(1)} h</td>
+                <td></td>
+            `;
+            tbody.appendChild(totalsTr);
         }
 
         function updateTotals() {
             const filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
-            let total30 = 0, total50 = 0, total130 = 0;
+            let total30 = 0, total50 = 0, total130 = 0, total100 = 0;
             filtered.forEach(r => {
-                total30 += parseFloat(r.h30) || 0;
-                total50 += parseFloat(r.h50) || 0;
-                total130 += parseFloat(r.h130) || 0;
+                total30 += safeNum(r.h30);
+                total50 += safeNum(r.h50);
+                total130 += safeNum(r.h130);
+                total100 += safeNum(r.h100);
             });
             const valorHora = parseFloat(document.getElementById('valorHora').value) || 0;
             const monto30 = total30 * valorHora * 1.3;
             const monto50 = total50 * valorHora * 1.5;
             const monto130 = total130 * valorHora * 2.3;
+            const monto100 = total100 * valorHora * 2.0;
             const totalNocturnas = total30 + total130;
             const montoNocturnas = monto30 + monto130;
-            const totalPagar = monto30 + monto50 + monto130;
+            const totalPagar = monto30 + monto50 + monto130 + monto100;
 
             document.getElementById('total30').innerText = total30.toFixed(1) + 'h';
             document.getElementById('total50').innerText = total50.toFixed(1) + 'h';
             document.getElementById('total130').innerText = total130.toFixed(1) + 'h';
+            document.getElementById('total100').innerText = total100.toFixed(1) + 'h';
             document.getElementById('totalNight').innerText = totalNocturnas.toFixed(1) + 'h';
 
             const formatCurrency = (val) => val === 0 ? '0 PYG' : val.toLocaleString('es-PY', { style: 'currency', currency: 'PYG', minimumFractionDigits: 0 });
             document.getElementById('monto30').innerText = formatCurrency(monto30);
             document.getElementById('monto50').innerText = formatCurrency(monto50);
             document.getElementById('monto130').innerText = formatCurrency(monto130);
+            document.getElementById('monto100').innerText = formatCurrency(monto100);
             document.getElementById('montoNight').innerText = formatCurrency(montoNocturnas);
             document.getElementById('totalPagar').innerText = formatCurrency(totalPagar);
 
-            if (valorHora > 0 && (total30 + total50 + total130) > 0) {
-                document.getElementById('totalPagarDetalle').innerHTML = `30%: ${formatCurrency(monto30)} | 50%: ${formatCurrency(monto50)} | 130%: ${formatCurrency(monto130)}`;
+            if (valorHora > 0 && (total30 + total50 + total130 + total100) > 0) {
+                document.getElementById('totalPagarDetalle').innerHTML = `30%: ${formatCurrency(monto30)} | 50%: ${formatCurrency(monto50)} | 130%: ${formatCurrency(monto130)} | 100% Dom: ${formatCurrency(monto100)}`;
             } else {
                 document.getElementById('totalPagarDetalle').innerHTML = '';
             }
@@ -919,16 +1077,17 @@
 
         function updateCharts() {
             let filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
-            let sum30 = 0, sum50 = 0, sum130 = 0;
+            let sum30 = 0, sum50 = 0, sum130 = 0, sum100 = 0;
             filtered.forEach(r => {
-                sum30 += parseFloat(r.h30) || 0;
-                sum50 += parseFloat(r.h50) || 0;
-                sum130 += parseFloat(r.h130) || 0;
+                sum30 += safeNum(r.h30);
+                sum50 += safeNum(r.h50);
+                sum130 += safeNum(r.h130);
+                sum100 += safeNum(r.h100);
             });
-            const labels = ['Nocturnidad 30%', 'Extra 50%', 'Extra Nocturna 130%'];
-            const values = [sum30, sum50, sum130];
+            const labels = ['Nocturnidad 30%', 'Extra 50%', 'Extra Nocturna 130%', 'Extra 100% Dom'];
+            const values = [sum30, sum50, sum130, sum100];
             const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#0056b3';
-            const colors = [accentColor, '#5c9139', '#7d3c98'];
+            const colors = [accentColor, '#5c9139', '#7d3c98', '#2563eb'];
             const hasData = values.some(v => v > 0);
 
             const pieCtx = document.getElementById('pieChart').getContext('2d');
@@ -967,85 +1126,12 @@
 
         function exportPDF() { window.print(); }
 
-        // ==============================================================
-        // EXPORTACIÓN A EXCEL CON COLORES EXACTOS DE LA REFERENCIA
-        // ==============================================================
         function exportExcel() {
-            const filtered = records.filter(r => currentFilter === 'TODOS' || r.worker === currentFilter);
-            filtered.sort((a, b) => a.date.localeCompare(b.date));
-
-            if (filtered.length === 0) { alert('No hay registros para exportar.'); return; }
-
-            let rowsHTML = '';
-            filtered.forEach(r => {
-                const h30 = parseFloat(r.h30) || 0;
-                const h50 = parseFloat(r.h50) || 0;
-                const h130 = parseFloat(r.h130) || 0;
-                const hasExtras = (h50 > 0 || h130 > 0);
-                const isNight = (h30 + h130) > 0;
-
-                let horarioDisplay = `${r.startTime} - ${r.endTime}`;
-                if (r.breakApplied) horarioDisplay += ' (30m)';
-                if (isNight) horarioDisplay += ' Noc';
-
-                let dateDisplay = r.date;
-                if (hasExtras) dateDisplay += ' (Extra)';
-
-                const bg30 = h30 > 0 ? 'background-color: #fff5cf;' : 'background-color: #fffceb;';
-                const border30 = h30 > 0 ? 'border: 2px solid #c39200;' : 'border: 1px solid #e6ae00;';
-                const bg50 = h50 > 0 ? 'background-color: #e4f0db;' : 'background-color: #f3f9ef;';
-                const border50 = h50 > 0 ? 'border: 2px solid #4b7a2e;' : 'border: 1px solid #5c9139;';
-                const bg130 = h130 > 0 ? 'background-color: #f0ddf7;' : 'background-color: #f8f0fb;';
-                const border130 = h130 > 0 ? 'border: 2px solid #6a3185;' : 'border: 1px solid #7d3c98;';
-
-                const turnoDisplay = r.breakApplied ? '12.0 h' : `${r.totalWorked} h`;
-
-                rowsHTML += `
-                    <tr>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: ${hasExtras ? 'bold' : 'normal'};">${dateDisplay}</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${r.worker}</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center;">${horarioDisplay}</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; font-weight: bold;">${turnoDisplay}</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg30} ${border30} color: #b38600; font-weight: 600;">${r.h30} h</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg50} ${border50} color: #3c6b20; font-weight: 600;">${r.h50} h</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center; ${bg130} ${border130} color: #5c2a70; font-weight: 600;">${r.h130} h</td>
-                        <td style="border: 1px solid #d0d0d0; padding: 6px 10px; text-align: center;"></td>
-                    </tr>
-                `;
-            });
-
-            const excelHTML = `
-                <html>
-                <head><meta charset="utf-8">
-                <style>
-                    table { border-collapse: collapse; width: 100%; font-family: 'Calibri', 'Arial', sans-serif; font-size: 12px; }
-                    .title-row td { border: none; padding-bottom: 10px; font-size: 16px; font-weight: bold; color: #0056b3; text-align: center; }
-                    th { border: 1px solid #d0d0d0; padding: 8px 12px; text-align: center; font-weight: bold; color: #1f2937; background-color: #f8fafc; }
-                    tr:nth-child(even) { background-color: #f9f9f9; }
-                </style>
-                </head>
-                <body>
-                    <table>
-                        <tr class="title-row"><td colspan="8">Control de Horas</td></tr>
-                        <thead><tr>
-                            <th>Fecha</th><th>Empleado</th><th>Horario</th><th>Turno</th>
-                            <th>Noc 30%</th><th>Extra 50%</th><th>Extra Noc 130%</th><th>Acciones</th>
-                        </tr></thead>
-                        <tbody>${rowsHTML}</tbody>
-                    </table>
-                </body>
-                </html>
-            `;
-
-            const blob = new Blob([excelHTML], { type: 'application/vnd.ms-excel' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `control_horas_${new Date().toISOString().slice(0, 10)}.xls`;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            showNotification('📊 Archivo Excel descargado con éxito', 'success');
+            const filtered = getFilteredSortedRecords();
+            const ok = downloadExcelFile(filtered, `control_horas_${new Date().toISOString().slice(0, 10)}.xls`, 'Control de Horas');
+            if (ok) showNotification('📊 Archivo Excel descargado con éxito', 'success');
         }
 
-        // COLORES Y ANIMACIONES
         const bgColorPicker = document.getElementById('bgColorPicker');
         const cardColorPicker = document.getElementById('cardColorPicker');
         const borderColorPicker = document.getElementById('borderColorPicker');
